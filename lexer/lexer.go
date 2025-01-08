@@ -35,10 +35,32 @@ func (l *Lexer) NextToken() token.Token {
 		tok = token.NewToken(l.ch, token.LParen)
 	case ')':
 		tok = token.NewToken(l.ch, token.RParen)
+	case ' ':
+		l.readChar()
+		return l.NextToken()
 	default:
-		tok = token.NewToken(l.ch, token.Atom)
+		if isValidLetter(l.ch) {
+			tok.Literal = l.readIdentifier()
+			tok.Type = token.Expr
+		} else {
+			tok = token.NewToken(l.ch, token.IllegalToken)
+		}
+		return tok
 	}
 
 	l.readChar()
 	return tok
+}
+
+func (l *Lexer) readIdentifier() string {
+	pos := l.pos
+	for isValidLetter(l.ch) {
+		l.readChar()
+	}
+
+	return l.input[pos:l.pos]
+}
+
+func isValidLetter(ch byte) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '-' || '0' <= ch && ch <= '9'
 }

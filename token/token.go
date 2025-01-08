@@ -5,7 +5,8 @@ type TokenType uint8
 const (
 	LParen TokenType = iota
 	RParen
-	Atom
+	Expr
+	IllegalToken
 )
 
 type Token struct {
