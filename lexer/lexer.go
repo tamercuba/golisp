@@ -1,6 +1,6 @@
 package lexer
 
-import "github.com/tamercuba/golisp/token"
+import "regexp"
 
 type Lexer struct {
 	input   string
@@ -27,40 +27,68 @@ func (l *Lexer) readChar() {
 	l.readPos += 1
 }
 
-func (l *Lexer) NextToken() token.Token {
-	var tok token.Token
+func (l *Lexer) NextToken() Token {
+	var tok Token
 
 	switch l.ch {
 	case '(':
-		tok = token.NewToken(l.ch, token.LParen)
+		tok = NewToken(l.ch, LParen)
 	case ')':
-		tok = token.NewToken(l.ch, token.RParen)
+		tok = NewToken(l.ch, RParen)
 	case ' ':
 		l.readChar()
 		return l.NextToken()
 	default:
-		if isValidLetter(l.ch) {
-			tok.Literal = l.readIdentifier()
-			tok.Type = token.Expr
-		} else {
-			tok = token.NewToken(l.ch, token.IllegalToken)
+		if !isValidChar(l.ch) {
+			tok = NewToken(l.ch, IllegalToken)
+			l.readChar()
+			return tok
 		}
-		return tok
+
+		tok.Literal = l.readExpr()
+		if isValidNumber(tok.Literal) {
+			if isInteger(tok.Literal) {
+				tok.Type = Int
+			} else {
+				tok.Type = Float
+			}
+			return tok
+		} else if isValidExpr(tok.Literal) {
+			SetExprType(&tok)
+			return tok
+		} else {
+			tok.Type = IllegalToken
+		}
 	}
 
 	l.readChar()
 	return tok
 }
 
-func (l *Lexer) readIdentifier() string {
+func (l *Lexer) readExpr() string {
 	pos := l.pos
-	for isValidLetter(l.ch) {
+	for isValidChar(l.ch) || l.ch == '.' || l.ch == '/' || l.ch == '-' {
 		l.readChar()
 	}
 
 	return l.input[pos:l.pos]
 }
 
-func isValidLetter(ch byte) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '-' || '0' <= ch && ch <= '9'
+func isValidNumber(expr string) bool {
+	re := regexp.MustCompile(`^\d+(\.\d+)?$`)
+	return re.MatchString(expr)
+}
+
+func isInteger(expr string) bool {
+	re := regexp.MustCompile(`^\d+$`)
+	return re.MatchString(expr)
+}
+
+func isValidExpr(expr string) bool {
+	re := regexp.MustCompile(`^[a-zA-Z0-9+\-*/]+$`)
+	return re.MatchString(expr)
+}
+
+func isValidChar(ch byte) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || '0' <= ch && ch <= '9' || ch == '+' || ch == '-' || ch == '*' || ch == '/'
 }
