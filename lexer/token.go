@@ -10,6 +10,7 @@ const (
 	IllegalToken
 	Int
 	Float
+	EOF
 )
 
 type Position struct {
