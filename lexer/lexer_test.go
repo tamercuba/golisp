@@ -8,12 +8,14 @@ func TestDefunBasicDeclaration(t *testing.T) {
 	tests := []struct {
 		expectedType    TokenType
 		exceptedLiteral string
+		posCh           int
+		posCol          int
 	}{
-		{LParen, "("},
-		{ReservedExpr, "defun"},
-		{Expr, "x"},
-		{Expr, "abc"},
-		{RParen, ")"},
+		{LParen, "(", 0, 0},
+		{ReservedExpr, "defun", 1, 0},
+		{Expr, "x", 7, 0},
+		{Expr, "abc", 9, 0},
+		{RParen, ")", 12, 0},
 	}
 
 	l := NewLexer(input)
@@ -26,7 +28,51 @@ func TestDefunBasicDeclaration(t *testing.T) {
 		if tok.Literal != tt.exceptedLiteral {
 			t.Fatalf("TestDefunBasicDeclaration[%d] - literal is wrong, expected=%q, got%q", i, tt.exceptedLiteral, tok.Literal)
 		}
+		if tok.Pos.Ch != tt.posCh {
+			t.Fatalf("TestDefunBasicDeclaration[%d] - char [%q] position is wrong, expected=%d, got%d", i, tok.Literal, tt.posCh, tok.Pos.Ch)
+		}
+		if tok.Pos.Col != tt.posCol {
+			t.Fatalf("TestDefunBasicDeclaration[%d] - char line is wrong, expected=%d, got%d", i, tt.posCol, tok.Pos.Col)
+		}
 	}
+}
+
+func TestPositionTracker(t *testing.T) {
+	input := `(1 2 3)
+(4 5 6)`
+	tests := []struct {
+		literal string
+		ch      int
+		col     int
+	}{
+		{"(", 0, 0},
+		{"1", 1, 0},
+		{"2", 3, 0},
+		{"3", 5, 0},
+		{")", 6, 0},
+		{"(", 0, 1},
+		{"4", 1, 1},
+		{"5", 3, 1},
+		{"6", 5, 1},
+		{")", 6, 1},
+	}
+
+	l := NewLexer(input)
+	for i, tt := range tests {
+		tok := l.NextToken()
+
+		if tok.Literal != tt.literal {
+			t.Fatalf("TestPositionTracker([%d] - Token literal is wrong, expected=%q, got=%q", i, tt.literal, tok.Literal)
+		}
+		if tok.Pos.Ch != tt.ch {
+			t.Fatalf("TestPositionTracker([%d] - Token [%q] position is wrong, expected=%d, got=%d", i, tok.Literal, tt.ch, tok.Pos.Ch)
+		}
+		if tok.Pos.Col != tt.col {
+			t.Fatalf("TestPositionTracker([%d] - Token line [%q] position is wrong, expected=%d, got=%d", i, tok.Literal, tt.col, tok.Pos.Col)
+		}
+
+	}
+
 }
 
 func TestDefunDeclarationWithDashChar(t *testing.T) {

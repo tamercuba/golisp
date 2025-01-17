@@ -12,14 +12,30 @@ const (
 	Float
 )
 
+type Position struct {
+	Ch  int
+	Col int
+}
+
 type Token struct {
 	Type    TokenType
 	Literal string
+	Pos     Position
 	// TODO: Keep track of ch/col of the token, so we can have better error messages
 }
 
-func NewToken(ch byte, tokenType TokenType) Token {
-	return Token{Literal: string(ch), Type: tokenType}
+func newPos(ch int, col int) *Position {
+	return &Position{Ch: ch, Col: col}
+}
+
+func NewToken(char byte, tokenType TokenType, ch int, col int) Token {
+	return Token{Literal: string(char), Type: tokenType, Pos: *newPos(ch, col)}
+}
+
+func (t *Token) SetPos(ch int, col int) {
+	t.Pos.Col = col
+	t.Pos.Ch = ch
+
 }
 
 var reservedExpressions = map[string]TokenType{
