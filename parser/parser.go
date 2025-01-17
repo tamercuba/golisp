@@ -35,15 +35,14 @@ func ParseProgram(l *lx.Lexer) (*ast.Program, error) {
 	program.ListStatements = []ast.ListExpression{}
 
 	for p.curToken.Type != lx.EOF {
-		if p.curToken.Type != lx.LParen {
-			// Throw Error
+		if p.curToken.Type == lx.LParen {
+			list := p.parseList()
+			if list != nil {
+				program.ListStatements = append(program.ListStatements, *list)
+			}
+		} else {
+			p.nextToken()
 		}
-
-		list := p.parseList()
-		if list != nil {
-			program.ListStatements = append(program.ListStatements, *list)
-		}
-		p.nextToken()
 	}
 
 	return program, nil
@@ -51,38 +50,41 @@ func ParseProgram(l *lx.Lexer) (*ast.Program, error) {
 
 func (p *Parser) parseList() *ast.ListExpression {
 	list := ast.ListExpression{Token: p.curToken}
-	for p.curToken.Type != lx.RParen {
-		if p.curToken.Type == lx.EOF {
-			fmt.Printf("ERROR PARSE LIST ) MISSING 1")
-			// Throw Error
-		}
 
-		p.nextToken()
+	p.nextToken()
 
-		switch p.curToken.Type {
-		case lx.LParen:
-			list.Elements = append(list.Elements, p.parseList())
-		case lx.RParen:
-			return &list
-		case lx.ReservedExpr:
-			list.Elements = append(list.Elements, p.parseReservedExpr())
-			return &list
-		case lx.Expr:
-			list.Elements = append(list.Elements, p.parseExpr())
-		case lx.EOF:
-			// Throw Error Not balanced parenthesis
-			panic(p.peekToken)
-		case lx.IllegalToken:
-			// Throw Error Illegal character
-			panic(lx.IllegalToken)
-		case lx.Int:
-			list.Elements = append(list.Elements, p.parseInt())
-		case lx.Float:
-			list.Elements = append(list.Elements, p.parseFloat())
-		}
+	if p.curToken.Type == lx.ReservedExpr {
+		callExpr := p.parseReservedExpr()
+		list.Elements = append(list.Elements, callExpr)
+		return &list
 	}
 
-	return nil
+	for {
+		switch p.curToken.Type {
+		case lx.LParen:
+			nestedList := p.parseList()
+			list.Elements = append(list.Elements, nestedList)
+
+		case lx.RParen:
+			return &list
+
+		case lx.Int:
+			intLiteral := p.parseInt()
+			list.Elements = append(list.Elements, intLiteral)
+			p.nextToken()
+		case lx.Float:
+			floatLiteral := p.parseFloat()
+			list.Elements = append(list.Elements, floatLiteral)
+			p.nextToken()
+		case lx.ReservedExpr:
+			reservedExpr := p.parseReservedExpr()
+			list.Elements = append(list.Elements, reservedExpr)
+		case lx.EOF:
+			panic("Unbalanced parentheses: EOF reached while parsing a list")
+		default:
+			panic(fmt.Sprintf("Unexpected token in list: %v", p.curToken))
+		}
+	}
 }
 
 func (p *Parser) parseInt() *ast.IntLiteral {
@@ -105,39 +107,34 @@ func (p *Parser) parseFloat() *ast.FloatLiteral {
 }
 
 func (p *Parser) parseReservedExpr() *ast.CallExpression {
-	callExpr := ast.CallExpression{Token: p.curToken, Arguments: []ast.Expression{}}
+	callExpr := &ast.CallExpression{Token: p.curToken, Arguments: []ast.Node{}}
+	p.nextToken()
 
-	for p.curToken.Type != lx.RParen {
-		p.nextToken()
-		if p.curToken.Type == lx.EOF {
-			fmt.Print("ERROR EOF\n")
-			// Throw Error
-		}
-
+	for {
 		switch p.curToken.Type {
 		case lx.LParen:
 			list := p.parseList()
-			if list == nil {
-				// Throw Error
-				fmt.Print("ERROR LPAREN LIST == NIL\n")
-			}
 			callExpr.Arguments = append(callExpr.Arguments, list)
 		case lx.RParen:
-			return &callExpr
-		case lx.IllegalToken:
-			// Thor Error
+			return callExpr
 		case lx.Int:
-			callExpr.Arguments = append(callExpr.Arguments, p.parseInt())
+			intLiteral := p.parseInt()
+			callExpr.Arguments = append(callExpr.Arguments, intLiteral)
+			p.nextToken()
 		case lx.Float:
-			callExpr.Arguments = append(callExpr.Arguments, p.parseFloat())
+			floatLiteral := p.parseFloat()
+			callExpr.Arguments = append(callExpr.Arguments, floatLiteral)
+			p.nextToken()
+		case lx.ReservedExpr:
+			nestedCall := p.parseReservedExpr()
+			callExpr.Arguments = append(callExpr.Arguments, nestedCall)
+		case lx.EOF:
+			panic("Unbalanced parentheses: EOF reached while parsing a reserved expression")
+		default:
+			panic(fmt.Sprintf("Unexpected token in reserved expression: %v", p.curToken))
 		}
-
 	}
-	// Maybe throw an error?
-	fmt.Print("ERROR OUT OF SWITCH\n")
-	return nil
 }
-
 func (p *Parser) parseExpr() *ast.CallExpression {
 	fmt.Print("ERROR PARSE EXPR\n")
 	return nil

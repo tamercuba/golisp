@@ -9,8 +9,8 @@ import (
 
 type CallExpression struct {
 	Token     lx.Token
-	Function  Expression // ?
-	Arguments []Expression
+	Function  Identifier // ?
+	Arguments []Node
 }
 
 func (ce *CallExpression) expressionNode() {}

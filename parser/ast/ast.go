@@ -10,11 +10,6 @@ type Node interface {
 	GetValue() any
 }
 
-type Expression interface {
-	Node
-	expressionNode()
-}
-
 type Program struct {
 	ListStatements []ListExpression
 }
@@ -23,8 +18,6 @@ type Identifier struct {
 	Token lx.Token
 	Value string
 }
-
-func (i *Identifier) expressionNode() {}
 
 func (i *Identifier) TokenLiteral() string {
 	return i.Token.Literal

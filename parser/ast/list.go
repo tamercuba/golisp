@@ -8,7 +8,7 @@ import (
 
 type ListExpression struct {
 	Token    lx.Token
-	Elements []Expression
+	Elements []Node
 }
 
 func (le *ListExpression) expressionNode() {}

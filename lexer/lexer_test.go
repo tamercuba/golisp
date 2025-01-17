@@ -6,6 +6,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestFirstToken(t *testing.T) {
+	input := `(+ 1 2)`
+	expected := Token{Type: LParen, Literal: "(", Pos: *newPos(0, 0)}
+
+	lexer := NewLexer(input)
+	firstToken := lexer.NextToken()
+
+	assert.IsType(t, Token{}, firstToken)
+	assert.Equal(t, expected, firstToken)
+}
+
 func TestDefunBasicDeclaration(t *testing.T) {
 	input := `(defun x abc)`
 
