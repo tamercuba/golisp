@@ -50,7 +50,7 @@ func (l *Lexer) NextToken() Token {
 		l.readChar()
 		return l.NextToken()
 	case 0:
-		tok = NewToken(0, EOF)
+		tok = NewToken(0, EOF, l.posCh, l.posCol)
 		return tok
 	default:
 		if !isValidChar(l.ch) {

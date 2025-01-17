@@ -9,7 +9,7 @@ import (
 
 type CallExpression struct {
 	Token     lx.Token
-	Function  Expression
+	Function  Expression // ?
 	Arguments []Expression
 }
 
@@ -24,5 +24,9 @@ func (ce *CallExpression) String() string {
 	for _, arg := range ce.Arguments {
 		args = append(args, arg.String())
 	}
-	return fmt.Sprintf("(%s %s)", ce.Function.String(), strings.Join(args, " "))
+	return fmt.Sprintf("(%s %s)", ce.Token.Literal, strings.Join(args, " "))
+}
+
+func (ce *CallExpression) GetValue() any {
+	return ce.Function.GetValue()
 }

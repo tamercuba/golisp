@@ -25,3 +25,12 @@ func (le *ListExpression) String() string {
 
 	return fmt.Sprintf("(%s)", strings.Join(values, " "))
 }
+
+func (le *ListExpression) GetValue() any {
+	result := make([]string, len(le.Elements))
+	for _, el := range le.Elements {
+		result = append(result, el.String())
+	}
+
+	return result
+}

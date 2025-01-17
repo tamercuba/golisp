@@ -7,6 +7,7 @@ import (
 type Node interface {
 	TokenLiteral() string
 	String() string
+	GetValue() any
 }
 
 type Expression interface {
@@ -31,4 +32,8 @@ func (i *Identifier) TokenLiteral() string {
 
 func (i *Identifier) String() string {
 	return i.Value
+}
+
+func (i *Identifier) GetValue() string {
+	return i.String()
 }
