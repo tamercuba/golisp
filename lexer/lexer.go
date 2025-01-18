@@ -1,16 +1,20 @@
 package lexer
 
-import "regexp"
+import (
+	"regexp"
+)
 
 type Lexer struct {
 	input   string
 	pos     int // points to current char
 	readPos int // points to after current char
 	ch      byte
+	posCol  int
+	posCh   int
 }
 
 func NewLexer(input string) *Lexer {
-	l := &Lexer{input: input}
+	l := &Lexer{input: input, posCol: 0, posCh: -1}
 	l.readChar()
 	return l
 }
@@ -23,6 +27,13 @@ func (l *Lexer) readChar() {
 		l.ch = l.input[l.readPos]
 	}
 
+	if l.ch == '\n' {
+		l.posCol++
+		l.posCh = -1
+	} else {
+		l.posCh++
+	}
+
 	l.pos = l.readPos
 	l.readPos += 1
 }
@@ -32,19 +43,20 @@ func (l *Lexer) NextToken() Token {
 
 	switch l.ch {
 	case '(':
-		tok = NewToken(l.ch, LParen)
+		tok = NewToken(l.ch, LParen, l.posCh, l.posCol)
 	case ')':
-		tok = NewToken(l.ch, RParen)
-	case ' ':
+		tok = NewToken(l.ch, RParen, l.posCh, l.posCol)
+	case '\n', ' ':
 		l.readChar()
 		return l.NextToken()
 	default:
 		if !isValidChar(l.ch) {
-			tok = NewToken(l.ch, IllegalToken)
+			tok = NewToken(l.ch, IllegalToken, l.posCh, l.posCol)
 			l.readChar()
 			return tok
 		}
 
+		tok.SetPos(l.posCh, l.posCol)
 		tok.Literal = l.readExpr()
 		if isValidNumber(tok.Literal) {
 			if isInteger(tok.Literal) {
