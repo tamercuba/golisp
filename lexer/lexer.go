@@ -49,6 +49,9 @@ func (l *Lexer) NextToken() Token {
 	case '\n', ' ':
 		l.readChar()
 		return l.NextToken()
+	case 0:
+		tok = NewToken(0, EOF, l.posCh, l.posCol)
+		return tok
 	default:
 		if !isValidChar(l.ch) {
 			tok = NewToken(l.ch, IllegalToken, l.posCh, l.posCol)

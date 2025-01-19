@@ -1,6 +1,21 @@
 package lexer
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestFirstToken(t *testing.T) {
+	input := `(+ 1 2)`
+	expected := Token{Type: LParen, Literal: "(", Pos: *newPos(0, 0)}
+
+	lexer := NewLexer(input)
+	firstToken := lexer.NextToken()
+
+	assert.IsType(t, Token{}, firstToken)
+	assert.Equal(t, expected, firstToken)
+}
 
 func TestDefunBasicDeclaration(t *testing.T) {
 	input := `(defun x abc)`
@@ -19,21 +34,12 @@ func TestDefunBasicDeclaration(t *testing.T) {
 	}
 
 	l := NewLexer(input)
-	for i, tt := range tests {
+	for _, tt := range tests {
 		tok := l.NextToken()
 
-		if tok.Type != tt.expectedType {
-			t.Fatalf("TestDefunBasicDeclaration[%d] - ype is wrong, expected=%d, got=%d. Token: %q", i, tt.expectedType, tok.Type, tok)
-		}
-		if tok.Literal != tt.exceptedLiteral {
-			t.Fatalf("TestDefunBasicDeclaration[%d] - literal is wrong, expected=%q, got%q", i, tt.exceptedLiteral, tok.Literal)
-		}
-		if tok.Pos.Ch != tt.posCh {
-			t.Fatalf("TestDefunBasicDeclaration[%d] - char [%q] position is wrong, expected=%d, got%d", i, tok.Literal, tt.posCh, tok.Pos.Ch)
-		}
-		if tok.Pos.Col != tt.posCol {
-			t.Fatalf("TestDefunBasicDeclaration[%d] - char line is wrong, expected=%d, got%d", i, tt.posCol, tok.Pos.Col)
-		}
+		assert.Equal(t, tok.Pos.Ch, tt.posCh)
+		assert.Equal(t, tok.Type, tt.expectedType)
+		assert.Equal(t, tok.Literal, tt.exceptedLiteral)
 	}
 }
 
@@ -58,19 +64,12 @@ func TestPositionTracker(t *testing.T) {
 	}
 
 	l := NewLexer(input)
-	for i, tt := range tests {
+	for _, tt := range tests {
 		tok := l.NextToken()
 
-		if tok.Literal != tt.literal {
-			t.Fatalf("TestPositionTracker([%d] - Token literal is wrong, expected=%q, got=%q", i, tt.literal, tok.Literal)
-		}
-		if tok.Pos.Ch != tt.ch {
-			t.Fatalf("TestPositionTracker([%d] - Token [%q] position is wrong, expected=%d, got=%d", i, tok.Literal, tt.ch, tok.Pos.Ch)
-		}
-		if tok.Pos.Col != tt.col {
-			t.Fatalf("TestPositionTracker([%d] - Token line [%q] position is wrong, expected=%d, got=%d", i, tok.Literal, tt.col, tok.Pos.Col)
-		}
-
+		assert.Equal(t, tok.Literal, tt.literal)
+		assert.Equal(t, tok.Pos.Ch, tt.ch)
+		assert.Equal(t, tok.Pos.Col, tt.col)
 	}
 
 }
@@ -90,15 +89,12 @@ func TestDefunDeclarationWithDashChar(t *testing.T) {
 	}
 
 	l := NewLexer(input)
-	for i, tt := range tests {
+	for _, tt := range tests {
 		tok := l.NextToken()
 
-		if tok.Type != tt.expectedType {
-			t.Fatalf("TestDefunDeclarationWithDashChar[%d] - ype is wrong, expected=%d, got=%d. Token: %q", i, tt.expectedType, tok.Type, tok.Literal)
-		}
-		if tok.Literal != tt.exceptedLiteral {
-			t.Fatalf("TestDefunDeclarationWithDashChar[%d] - literal is wrong, expected=%q, got%q", i, tt.exceptedLiteral, tok.Literal)
-		}
+		assert.Equal(t, tok.Type, tt.expectedType)
+		assert.Equal(t, tok.Literal, tt.exceptedLiteral)
+
 	}
 }
 
@@ -117,15 +113,12 @@ func TestFloatDeclaration(t *testing.T) {
 	}
 
 	l := NewLexer(input)
-	for i, tt := range tests {
+	for _, tt := range tests {
 		tok := l.NextToken()
 
-		if tok.Type != tt.expectedType {
-			t.Fatalf("TestFloatDeclaration[%d] - ype is wrong, expected=%d, got=%d. Token: %q", i, tt.expectedType, tok.Type, tok.Literal)
-		}
-		if tok.Literal != tt.exceptedLiteral {
-			t.Fatalf("TestFloatDeclaration[%d] - literal is wrong, expected=%q, got%q", i, tt.exceptedLiteral, tok.Literal)
-		}
+		assert.Equal(t, tok.Type, tt.expectedType)
+		assert.Equal(t, tok.Literal, tt.exceptedLiteral)
+
 	}
 }
 
@@ -144,14 +137,10 @@ func TestPlusExprAreRecognized(t *testing.T) {
 	}
 
 	l := NewLexer(input)
-	for i, tt := range tests {
+	for _, tt := range tests {
 		tok := l.NextToken()
 
-		if tok.Type != tt.expectedType {
-			t.Fatalf("TestFloatDeclaration[%d] - ype is wrong, expected=%d, got=%d. Token: %q", i, tt.expectedType, tok.Type, tok.Literal)
-		}
-		if tok.Literal != tt.exceptedLiteral {
-			t.Fatalf("TestFloatDeclaration[%d] - literal is wrong, expected=%q, got%q", i, tt.exceptedLiteral, tok.Literal)
-		}
+		assert.Equal(t, tok.Type, tt.expectedType)
+		assert.Equal(t, tok.Literal, tt.exceptedLiteral)
 	}
 }
