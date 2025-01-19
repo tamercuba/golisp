@@ -22,7 +22,6 @@ type Token struct {
 	Type    TokenType
 	Literal string
 	Pos     Position
-	// TODO: Keep track of ch/col of the token, so we can have better error messages
 }
 
 func newPos(ch int, col int) *Position {
