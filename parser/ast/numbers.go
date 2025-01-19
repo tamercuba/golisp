@@ -15,7 +15,9 @@ type FloatLiteral struct {
 	Value float64
 }
 
-func (il *IntLiteral) expressionNode() {}
+func (il *IntLiteral) expressionNode() {
+	// This function should be empty for now
+}
 
 func (il *IntLiteral) TokenLiteral() string {
 	return il.Token.Literal
@@ -29,7 +31,9 @@ func (il *IntLiteral) GetValue() any {
 	return il.Value
 }
 
-func (fl *FloatLiteral) expressionNode() {}
+func (fl *FloatLiteral) expressionNode() {
+	// This function should be empty for now
+}
 
 func (fl *FloatLiteral) TokenLiteral() string {
 	return fl.Token.Literal

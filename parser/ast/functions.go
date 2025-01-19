@@ -13,7 +13,9 @@ type CallExpression struct {
 	Arguments []Node
 }
 
-func (ce *CallExpression) expressionNode() {}
+func (ce *CallExpression) expressionNode() {
+	// This function should be empty for now
+}
 
 func (ce *CallExpression) TokenLiteral() string {
 	return ce.Token.Literal

@@ -11,7 +11,9 @@ type ListExpression struct {
 	Elements []Node
 }
 
-func (le *ListExpression) expressionNode() {}
+func (le *ListExpression) expressionNode() {
+	// This function should be empty for now
+}
 
 func (le *ListExpression) TokenLiteral() string {
 	return le.Token.Literal
