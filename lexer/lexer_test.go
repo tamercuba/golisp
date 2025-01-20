@@ -21,10 +21,10 @@ func TestDefunBasicDeclaration(t *testing.T) {
 	input := `(defun x abc)`
 
 	tests := []struct {
-		expectedType    TokenType
-		exceptedLiteral string
-		posCh           int
-		posCol          int
+		expectedType   TokenType
+		exeptedLiteral string
+		posCh          int
+		posCol         int
 	}{
 		{LParen, "(", 0, 0},
 		{ReservedExpr, "defun", 1, 0},
@@ -39,7 +39,7 @@ func TestDefunBasicDeclaration(t *testing.T) {
 
 		assert.Equal(t, tok.Pos.Ch, tt.posCh)
 		assert.Equal(t, tok.Type, tt.expectedType)
-		assert.Equal(t, tok.Literal, tt.exceptedLiteral)
+		assert.Equal(t, tok.Literal, tt.exeptedLiteral)
 	}
 }
 
@@ -78,8 +78,8 @@ func TestDefunDeclarationWithDashChar(t *testing.T) {
 	input := `(defun variable-with-dash 10)`
 
 	tests := []struct {
-		expectedType    TokenType
-		exceptedLiteral string
+		expectedType   TokenType
+		exeptedLiteral string
 	}{
 		{LParen, "("},
 		{ReservedExpr, "defun"},
@@ -93,7 +93,7 @@ func TestDefunDeclarationWithDashChar(t *testing.T) {
 		tok := l.NextToken()
 
 		assert.Equal(t, tok.Type, tt.expectedType)
-		assert.Equal(t, tok.Literal, tt.exceptedLiteral)
+		assert.Equal(t, tok.Literal, tt.exeptedLiteral)
 
 	}
 }
@@ -102,8 +102,8 @@ func TestFloatDeclaration(t *testing.T) {
 	input := `(defun x 10.1)`
 
 	tests := []struct {
-		expectedType    TokenType
-		exceptedLiteral string
+		expectedType   TokenType
+		exeptedLiteral string
 	}{
 		{LParen, "("},
 		{ReservedExpr, "defun"},
@@ -117,7 +117,7 @@ func TestFloatDeclaration(t *testing.T) {
 		tok := l.NextToken()
 
 		assert.Equal(t, tok.Type, tt.expectedType)
-		assert.Equal(t, tok.Literal, tt.exceptedLiteral)
+		assert.Equal(t, tok.Literal, tt.exeptedLiteral)
 
 	}
 }
@@ -126,8 +126,8 @@ func TestPlusExprAreRecognized(t *testing.T) {
 	input := `(+ 1 2)`
 
 	tests := []struct {
-		expectedType    TokenType
-		exceptedLiteral string
+		expectedType   TokenType
+		exeptedLiteral string
 	}{
 		{LParen, "("},
 		{ReservedExpr, "+"},
@@ -141,6 +141,6 @@ func TestPlusExprAreRecognized(t *testing.T) {
 		tok := l.NextToken()
 
 		assert.Equal(t, tok.Type, tt.expectedType)
-		assert.Equal(t, tok.Literal, tt.exceptedLiteral)
+		assert.Equal(t, tok.Literal, tt.exeptedLiteral)
 	}
 }

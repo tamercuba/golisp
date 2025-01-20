@@ -63,11 +63,11 @@ func (p *Parser) parseList() *ast.ListExpression {
 		switch p.curToken.Type {
 		case lx.LParen:
 			nestedList := p.parseList()
-			list.Elements = append(list.Elements, nestedList)
-
+			if nestedList != nil {
+				list.Elements = append(list.Elements, nestedList)
+			}
 		case lx.RParen:
 			return &list
-
 		case lx.Int:
 			intLiteral := p.parseInt()
 			list.Elements = append(list.Elements, intLiteral)
@@ -114,7 +114,9 @@ func (p *Parser) parseReservedExpr() *ast.CallExpression {
 		switch p.curToken.Type {
 		case lx.LParen:
 			list := p.parseList()
-			callExpr.Arguments = append(callExpr.Arguments, list)
+			if list != nil {
+				callExpr.Arguments = append(callExpr.Arguments, list)
+			}
 		case lx.RParen:
 			return callExpr
 		case lx.Int:
