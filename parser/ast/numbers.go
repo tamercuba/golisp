@@ -2,47 +2,59 @@ package ast
 
 import (
 	"fmt"
+	"strconv"
+
 	lx "github.com/tamercuba/golisp/lexer"
 )
 
 type IntLiteral struct {
-	Token lx.Token
-	Value int32
+	token lx.Token
+	value int32
 }
 
 type FloatLiteral struct {
-	Token lx.Token
-	Value float64
+	token lx.Token
+	value float64
 }
 
-func (il *IntLiteral) expressionNode() {
-	// This function should be empty for now
+func NewIntLiteral(token lx.Token) *IntLiteral {
+	value, err := strconv.Atoi(token.Literal)
+	if err != nil {
+		panic(fmt.Sprintf("%q is a invalid integer", token.Literal))
+	}
+
+	return &IntLiteral{token: token, value: int32(value)}
 }
 
-func (il *IntLiteral) TokenLiteral() string {
-	return il.Token.Literal
+func (il *IntLiteral) GetToken() lx.Token {
+	return il.token
 }
 
-func (il *IntLiteral) String() string {
-	return fmt.Sprintf("%d", il.Value)
+func (il IntLiteral) String() string {
+	return fmt.Sprintf("%d", il.value)
 }
 
 func (il *IntLiteral) GetValue() any {
-	return il.Value
+	return il.value
 }
 
-func (fl *FloatLiteral) expressionNode() {
-	// This function should be empty for now
+func NewFloatLiteral(token lx.Token) *FloatLiteral {
+	value, err := strconv.ParseFloat(token.Literal, 64)
+	if err != nil {
+		panic(fmt.Sprintf("%q is a invalid float", token.Literal))
+	}
+
+	return &FloatLiteral{token: token, value: value}
 }
 
-func (fl *FloatLiteral) TokenLiteral() string {
-	return fl.Token.Literal
+func (fl *FloatLiteral) GetToken() lx.Token {
+	return fl.token
 }
 
-func (fl *FloatLiteral) String() string {
-	return fmt.Sprintf("%ff", fl.Value)
+func (fl FloatLiteral) String() string {
+	return fmt.Sprintf("%ff", fl.value)
 }
 
 func (fl *FloatLiteral) GetValue() any {
-	return fl.Value
+	return fl.value
 }

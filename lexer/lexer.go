@@ -68,8 +68,10 @@ func (l *Lexer) NextToken() Token {
 				tok.Type = Float
 			}
 			return tok
-		} else if isValidExpr(tok.Literal) {
-			SetExprType(&tok)
+		} else if isValidString(tok.Literal) {
+			tok.Type = String
+		} else if isValidSymbol(tok.Literal) {
+			tok.Type = Symbol
 			return tok
 		} else {
 			tok.Type = IllegalToken
@@ -89,21 +91,27 @@ func (l *Lexer) readExpr() string {
 	return l.input[pos:l.pos]
 }
 
-func isValidNumber(expr string) bool {
-	re := regexp.MustCompile(`^\d+(\.\d+)?$`)
+func validateRegex(expr string, regex string) bool {
+	re := regexp.MustCompile(regex)
 	return re.MatchString(expr)
+}
+
+func isValidString(expr string) bool {
+	return validateRegex(expr, `^'[^']*'$`) || validateRegex(expr, `^"[^"]*"$`)
+}
+
+func isValidNumber(expr string) bool {
+	return validateRegex(expr, `^\d+(\.\d+)?$`)
 }
 
 func isInteger(expr string) bool {
-	re := regexp.MustCompile(`^\d+$`)
-	return re.MatchString(expr)
+	return validateRegex(expr, `^\d+$`)
 }
 
-func isValidExpr(expr string) bool {
-	re := regexp.MustCompile(`^[a-zA-Z0-9+\-*/]+$`)
-	return re.MatchString(expr)
+func isValidSymbol(expr string) bool {
+	return validateRegex(expr, `^[a-zA-Z0-9+\-*/^]+$`)
 }
 
 func isValidChar(ch byte) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || '0' <= ch && ch <= '9' || ch == '+' || ch == '-' || ch == '*' || ch == '/'
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || '0' <= ch && ch <= '9' || ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '"' || ch == '\''
 }

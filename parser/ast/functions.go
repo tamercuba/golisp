@@ -7,28 +7,30 @@ import (
 	lx "github.com/tamercuba/golisp/lexer"
 )
 
-type CallExpression struct {
-	Token     lx.Token
-	Function  Identifier // ?
-	Arguments []Node
+type FunctionDeclaration struct {
+	token lx.Token
+	Name  *Symbol
+	Args  []Symbol
+	Body  Node
 }
 
-func (ce *CallExpression) expressionNode() {
-	// This function should be empty for now
+func NewFunctionDeclaration(token lx.Token, name *Symbol, args []Symbol, body Node) *FunctionDeclaration {
+	return &FunctionDeclaration{token: token, Name: name, Args: args, Body: body}
 }
 
-func (ce *CallExpression) TokenLiteral() string {
-	return ce.Token.Literal
+func (fd *FunctionDeclaration) GetToken() lx.Token {
+	return fd.token
 }
 
-func (ce *CallExpression) String() string {
-	args := []string{}
-	for _, arg := range ce.Arguments {
-		args = append(args, arg.String())
+func (fd FunctionDeclaration) String() string {
+	argsStrings := []string{}
+	for _, argName := range fd.Args {
+		argsStrings = append(argsStrings, argName.String())
 	}
-	return fmt.Sprintf("(%s %s)", ce.Token.Literal, strings.Join(args, " "))
+	argsResult := fmt.Sprintf("%q", strings.Join(argsStrings, " "))
+	return fmt.Sprintf("(defun %q (%q) (%q))", fd.Name, argsResult, fd.Body.String())
 }
 
-func (ce *CallExpression) GetValue() any {
-	return ce.Function.GetValue()
+func (fd *FunctionDeclaration) GetValue() any {
+	return fd.Name
 }

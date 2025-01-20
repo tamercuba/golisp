@@ -19,13 +19,26 @@ func TestParseSimpleListOfIntegers(t *testing.T) {
 
 	statement := result.ListStatements[0]
 
-	assert.IsType(t, ast.ListExpression{}, statement)
-	assert.Equal(t, 3, len(statement.Elements))
+	assert.IsType(t, &ast.ListExpression{}, statement)
 
-	initElement := int32(1)
-	for _, el := range statement.Elements {
-		assert.Equal(t, initElement, el.GetValue())
-		initElement += 1
+	switch list := statement.(type) {
+	case *ast.ListExpression:
+		assert.Equal(t, 3, list.Size)
+		currValue := 1
+		currNode := list.Head
+		for {
+			assert.NotNil(t, currNode)
+			assert.Equal(t, int32(currValue), currNode.LNode.GetValue())
+
+			if currNode.Next == nil {
+				break
+			} else {
+				currNode = currNode.Next
+				currValue++
+			}
+		}
+	default:
+		assert.Fail(t, "Invalid type")
 	}
 }
 
@@ -37,6 +50,33 @@ func TestParseNestedListsOfNumbers(t *testing.T) {
 	assert.Nil(t, err)
 	assert.IsType(t, result, &ast.Program{})
 	assert.Equal(t, 1, len(result.ListStatements))
+
+	s := result.ListStatements[0]
+	switch l := s.(type) {
+	case *ast.ListExpression:
+		assert.NotNil(t, l.Head)
+		assert.Equal(t, int32(1), l.Head.LNode.GetValue())
+
+		assert.NotNil(t, l.Head.Next)
+		assert.Equal(t, float64(1.1), l.Head.Next.LNode.GetValue())
+		assert.IsType(t, &ast.ListExpression{}, l.Head.Next.Next.LNode)
+
+		nested := l.Head.Next.Next.LNode
+		switch ll := nested.(type) {
+		case *ast.ListExpression:
+			assert.NotNil(t, ll.Head)
+			assert.Equal(t, int32(2), ll.Head.LNode.GetValue())
+			assert.NotNil(t, ll.Head.Next)
+			assert.Equal(t, int32(3), ll.Head.Next.LNode.GetValue())
+			assert.Nil(t, ll.Head.Next.Next)
+		default:
+			assert.Fail(t, "Invalid type")
+		}
+		assert.Nil(t, l.Head.Next.Next.Next)
+
+	default:
+		assert.Fail(t, "Invalid type")
+	}
 }
 
 func TestParseSumOfIntegers(t *testing.T) {
@@ -48,16 +88,19 @@ func TestParseSumOfIntegers(t *testing.T) {
 	assert.IsType(t, &ast.Program{}, result)
 	assert.Equal(t, 1, len(result.ListStatements))
 
-	statement := result.ListStatements[0]
-
-	assert.Equal(t, "(", statement.TokenLiteral())
-	assert.Equal(t, 1, len(statement.Elements))
-
-	callExpr := statement.Elements[0]
-
-	assert.IsType(t, &ast.CallExpression{}, callExpr)
-	assert.Equal(t, "+", callExpr.TokenLiteral())
-	assert.Equal(t, "(+ 1 2)", callExpr.String())
+	s := result.ListStatements[0]
+	switch l := s.(type) {
+	case *ast.ListExpression:
+		assert.Equal(t, 3, l.Size)
+		assert.NotNil(t, l.Head)
+		assert.Equal(t, "+", l.Head.LNode.GetToken().Literal)
+		assert.NotNil(t, l.Head.Next)
+		assert.Equal(t, int32(1), l.Head.Next.LNode.GetValue())
+		assert.NotNil(t, l.Head.Next.Next)
+		assert.Equal(t, int32(2), l.Head.Next.Next.LNode.GetValue())
+	default:
+		assert.Fail(t, "Invalid type")
+	}
 }
 
 func TestTwoStatements(t *testing.T) {
@@ -70,19 +113,8 @@ func TestTwoStatements(t *testing.T) {
 	assert.IsType(t, &ast.Program{}, result)
 	assert.Equal(t, 2, len(result.ListStatements))
 
-	assert.Equal(t, "(", result.ListStatements[0].TokenLiteral())
-	assert.Equal(t, 0, result.ListStatements[0].Token.Pos.Col)
-	assert.Equal(t, 0, result.ListStatements[0].Token.Pos.Ch)
-	assert.Equal(t, 3, len(result.ListStatements[0].Elements))
-	assert.Equal(t, int32(1), result.ListStatements[0].Elements[0].GetValue())
-	assert.Equal(t, int32(2), result.ListStatements[0].Elements[1].GetValue())
-	assert.Equal(t, int32(3), result.ListStatements[0].Elements[2].GetValue())
-
-	assert.Equal(t, "(", result.ListStatements[1].TokenLiteral())
-	assert.Equal(t, 1, result.ListStatements[1].Token.Pos.Col)
-	assert.Equal(t, 0, result.ListStatements[1].Token.Pos.Ch)
-	assert.Equal(t, 1, len(result.ListStatements[1].Elements))
-	assert.Equal(t, "(+ 1 2)", result.ListStatements[1].Elements[0].String())
+	assert.IsType(t, &ast.ListExpression{}, result.ListStatements[0])
+	assert.IsType(t, &ast.ListExpression{}, result.ListStatements[1])
 }
 
 func TestNestedFunctionCalls(t *testing.T) {
@@ -94,11 +126,13 @@ func TestNestedFunctionCalls(t *testing.T) {
 	assert.IsType(t, &ast.Program{}, result)
 	assert.Equal(t, 1, len(result.ListStatements))
 
-	listElemen := result.ListStatements[0]
-	callExpr := listElemen.Elements[0]
+	s := result.ListStatements[0]
 
-	assert.IsType(t, &ast.CallExpression{}, callExpr)
-	// TODO: (+ 2 3) should be a single Node instead of a list node with
-	//       a single Node
-	assert.Equal(t, "(+ 1 ((+ 2 3)))", callExpr.String())
+	switch l := s.(type) {
+	case *ast.ListExpression:
+		assert.Equal(t, 3, l.Size)
+		assert.IsType(t, &ast.ListExpression{}, l.Head.Next.Next.LNode)
+	default:
+		assert.Fail(t, "Invalid type")
+	}
 }
