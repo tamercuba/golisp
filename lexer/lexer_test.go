@@ -9,13 +9,36 @@ import (
 
 func TestFirstToken(t *testing.T) {
 	input := `(+ 1 2)`
-	expected := Token{Type: LParen, Literal: "(", Pos: *newPos(0, 0)}
+	expected := Token{Type: LParen, Literal: "(", Pos: *NewPos(0, 0)}
 
 	lexer := NewLexer(input)
 	firstToken := lexer.NextToken()
 
 	assert.IsType(t, Token{}, firstToken)
 	assert.Equal(t, expected, firstToken)
+}
+
+func TestEOF(t *testing.T) {
+	input := "\x00"
+	expected := Token{Type: EOF, Literal: "\x00", Pos: *NewPos(0, 0)}
+
+	l := NewLexer(input)
+	tt := l.NextToken()
+
+	assert.IsType(t, Token{}, tt)
+	assert.Equal(t, expected, tt)
+}
+
+func TestIllegalToken(t *testing.T) {
+	input := ","
+	expected := Token{Type: IllegalToken, Literal: ",", Pos: *NewPos(0, 0)}
+
+	l := NewLexer(input)
+	tt := l.NextToken()
+
+	assert.IsType(t, Token{}, tt)
+	assert.Equal(t, expected, tt)
+
 }
 
 func TestDefunBasicDeclaration(t *testing.T) {

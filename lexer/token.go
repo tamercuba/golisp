@@ -30,12 +30,12 @@ type Token struct {
 	Pos     Position
 }
 
-func newPos(ch int, col int) *Position {
+func NewPos(ch int, col int) *Position {
 	return &Position{Ch: ch, Col: col}
 }
 
 func NewToken(char byte, tokenType TokenType, ch int, col int) Token {
-	return Token{Literal: string(char), Type: tokenType, Pos: *newPos(ch, col)}
+	return Token{Literal: string(char), Type: tokenType, Pos: *NewPos(ch, col)}
 }
 
 func (t *Token) SetPos(ch int, col int) {

@@ -21,7 +21,7 @@ func (ld *LetDeclaration) GetToken() lx.Token {
 }
 
 func (ld LetDeclaration) String() string {
-	return fmt.Sprintf("(let %q %q)", ld.Name, ld.Value)
+	return fmt.Sprintf("(let %v %v)", ld.Name, ld.Value)
 }
 
 func (ld *LetDeclaration) GetValue() any {
