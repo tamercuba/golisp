@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,7 +9,7 @@ import (
 
 func TestFirstToken(t *testing.T) {
 	input := `(+ 1 2)`
-	expected := Token{Type: LParen, Literal: "(", Pos: *newPos(0, 0)}
+	expected := Token{Type: LParen, Literal: "(", Pos: *NewPos(0, 0)}
 
 	lexer := NewLexer(input)
 	firstToken := lexer.NextToken()
@@ -17,19 +18,42 @@ func TestFirstToken(t *testing.T) {
 	assert.Equal(t, expected, firstToken)
 }
 
+func TestEOF(t *testing.T) {
+	input := "\x00"
+	expected := Token{Type: EOF, Literal: "\x00", Pos: *NewPos(0, 0)}
+
+	l := NewLexer(input)
+	tt := l.NextToken()
+
+	assert.IsType(t, Token{}, tt)
+	assert.Equal(t, expected, tt)
+}
+
+func TestIllegalToken(t *testing.T) {
+	input := ","
+	expected := Token{Type: IllegalToken, Literal: ",", Pos: *NewPos(0, 0)}
+
+	l := NewLexer(input)
+	tt := l.NextToken()
+
+	assert.IsType(t, Token{}, tt)
+	assert.Equal(t, expected, tt)
+
+}
+
 func TestDefunBasicDeclaration(t *testing.T) {
 	input := `(defun x abc)`
 
 	tests := []struct {
-		expectedType   TokenType
-		exeptedLiteral string
-		posCh          int
-		posCol         int
+		expectedType    TokenType
+		expectedLiteral string
+		posCh           int
+		posCol          int
 	}{
 		{LParen, "(", 0, 0},
-		{ReservedExpr, "defun", 1, 0},
-		{Expr, "x", 7, 0},
-		{Expr, "abc", 9, 0},
+		{Symbol, "defun", 1, 0},
+		{Symbol, "x", 7, 0},
+		{Symbol, "abc", 9, 0},
 		{RParen, ")", 12, 0},
 	}
 
@@ -39,7 +63,7 @@ func TestDefunBasicDeclaration(t *testing.T) {
 
 		assert.Equal(t, tok.Pos.Ch, tt.posCh)
 		assert.Equal(t, tok.Type, tt.expectedType)
-		assert.Equal(t, tok.Literal, tt.exeptedLiteral)
+		assert.Equal(t, tok.Literal, tt.expectedLiteral)
 	}
 }
 
@@ -78,12 +102,12 @@ func TestDefunDeclarationWithDashChar(t *testing.T) {
 	input := `(defun variable-with-dash 10)`
 
 	tests := []struct {
-		expectedType   TokenType
-		exeptedLiteral string
+		expectedType    TokenType
+		expectedLiteral string
 	}{
 		{LParen, "("},
-		{ReservedExpr, "defun"},
-		{Expr, "variable-with-dash"},
+		{Symbol, "defun"},
+		{Symbol, "variable-with-dash"},
 		{Int, "10"},
 		{RParen, ")"},
 	}
@@ -93,7 +117,7 @@ func TestDefunDeclarationWithDashChar(t *testing.T) {
 		tok := l.NextToken()
 
 		assert.Equal(t, tok.Type, tt.expectedType)
-		assert.Equal(t, tok.Literal, tt.exeptedLiteral)
+		assert.Equal(t, tok.Literal, tt.expectedLiteral)
 
 	}
 }
@@ -102,12 +126,12 @@ func TestFloatDeclaration(t *testing.T) {
 	input := `(defun x 10.1)`
 
 	tests := []struct {
-		expectedType   TokenType
-		exeptedLiteral string
+		expectedType    TokenType
+		expectedLiteral string
 	}{
 		{LParen, "("},
-		{ReservedExpr, "defun"},
-		{Expr, "x"},
+		{Symbol, "defun"},
+		{Symbol, "x"},
 		{Float, "10.1"},
 		{RParen, ")"},
 	}
@@ -117,7 +141,7 @@ func TestFloatDeclaration(t *testing.T) {
 		tok := l.NextToken()
 
 		assert.Equal(t, tok.Type, tt.expectedType)
-		assert.Equal(t, tok.Literal, tt.exeptedLiteral)
+		assert.Equal(t, tok.Literal, tt.expectedLiteral)
 
 	}
 }
@@ -126,11 +150,11 @@ func TestPlusExprAreRecognized(t *testing.T) {
 	input := `(+ 1 2)`
 
 	tests := []struct {
-		expectedType   TokenType
-		exeptedLiteral string
+		expectedType    TokenType
+		expectedLiteral string
 	}{
 		{LParen, "("},
-		{ReservedExpr, "+"},
+		{Symbol, "+"},
 		{Int, "1"},
 		{Int, "2"},
 		{RParen, ")"},
@@ -141,6 +165,36 @@ func TestPlusExprAreRecognized(t *testing.T) {
 		tok := l.NextToken()
 
 		assert.Equal(t, tok.Type, tt.expectedType)
-		assert.Equal(t, tok.Literal, tt.exeptedLiteral)
+		assert.Equal(t, tok.Literal, tt.expectedLiteral)
 	}
+}
+
+func TestStringDeclaration(t *testing.T) {
+	input := `("a" 'b' 'c" ab'cd x)`
+	tests := []struct {
+		expectedType    TokenType
+		expectedLiteral string
+	}{
+		{LParen, "("},
+		{String, `"a"`},
+		{String, `'b'`},
+		{IllegalToken, `'c"`},
+		{IllegalToken, `ab'cd`},
+		{Symbol, "x"},
+		{RParen, ")"},
+	}
+
+	l := NewLexer(input)
+	for _, tt := range tests {
+		tok := l.NextToken()
+
+		assert.Equal(t, tt.expectedType, tok.Type, fmt.Sprintf("Token literal: %q", tok.Literal))
+		assert.Equal(t, tt.expectedLiteral, tok.Literal)
+	}
+}
+
+func TestValidateString(t *testing.T) {
+	expr := `ab'cd`
+	result := isValidSymbol(expr)
+	assert.False(t, result)
 }

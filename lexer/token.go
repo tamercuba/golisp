@@ -1,13 +1,15 @@
 package lexer
 
+import "fmt"
+
 type TokenType uint8
 
 const (
 	LParen TokenType = iota
 	RParen
-	ReservedExpr
-	Expr
+	Symbol
 	IllegalToken
+	String
 	Int
 	Float
 	EOF
@@ -18,40 +20,26 @@ type Position struct {
 	Col int
 }
 
+func (p Position) String() string {
+	return fmt.Sprintf("%d:%d ", p.Col, p.Ch)
+}
+
 type Token struct {
 	Type    TokenType
 	Literal string
 	Pos     Position
 }
 
-func newPos(ch int, col int) *Position {
+func NewPos(ch int, col int) *Position {
 	return &Position{Ch: ch, Col: col}
 }
 
 func NewToken(char byte, tokenType TokenType, ch int, col int) Token {
-	return Token{Literal: string(char), Type: tokenType, Pos: *newPos(ch, col)}
+	return Token{Literal: string(char), Type: tokenType, Pos: *NewPos(ch, col)}
 }
 
 func (t *Token) SetPos(ch int, col int) {
 	t.Pos.Col = col
 	t.Pos.Ch = ch
 
-}
-
-var reservedExpressions = map[string]TokenType{
-	"let":    ReservedExpr,
-	"lambda": ReservedExpr,
-	"defun":  ReservedExpr,
-	"+":      ReservedExpr,
-	"-":      ReservedExpr,
-	"*":      ReservedExpr,
-	"/":      ReservedExpr,
-}
-
-func SetExprType(t *Token) {
-	if _, ok := reservedExpressions[t.Literal]; ok {
-		t.Type = ReservedExpr
-	} else {
-		t.Type = Expr
-	}
 }

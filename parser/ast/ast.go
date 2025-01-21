@@ -5,28 +5,32 @@ import (
 )
 
 type Node interface {
-	TokenLiteral() string
+	GetToken() lx.Token
 	String() string
 	GetValue() any
 }
 
 type Program struct {
-	ListStatements []ListExpression
+	ListStatements []Node
 }
 
-type Identifier struct {
-	Token lx.Token
-	Value string
+type Symbol struct {
+	token lx.Token
+	value string
 }
 
-func (i *Identifier) TokenLiteral() string {
-	return i.Token.Literal
+func NewSymbol(token lx.Token) *Symbol {
+	return &Symbol{token: token, value: token.Literal}
 }
 
-func (i *Identifier) String() string {
-	return i.Value
+func (s *Symbol) GetToken() lx.Token {
+	return s.token
 }
 
-func (i *Identifier) GetValue() string {
-	return i.String()
+func (s Symbol) String() string {
+	return s.value
+}
+
+func (s *Symbol) GetValue() any {
+	return s.value
 }

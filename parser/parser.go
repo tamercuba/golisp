@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"strconv"
 
 	lx "github.com/tamercuba/golisp/lexer"
 	"github.com/tamercuba/golisp/parser/ast"
@@ -32,15 +31,16 @@ func (p *Parser) nextToken() {
 func ParseProgram(l *lx.Lexer) (*ast.Program, error) {
 	p := newParser(l)
 	program := &ast.Program{}
-	program.ListStatements = []ast.ListExpression{}
+	program.ListStatements = []ast.Node{}
 
 	for p.curToken.Type != lx.EOF {
 		if p.curToken.Type == lx.LParen {
 			list := p.parseList()
 			if list != nil {
-				program.ListStatements = append(program.ListStatements, *list)
+				program.ListStatements = append(program.ListStatements, list)
 			}
 		} else {
+			// TODO: Maybe throw an error? Idk yet
 			p.nextToken()
 		}
 	}
@@ -48,37 +48,39 @@ func ParseProgram(l *lx.Lexer) (*ast.Program, error) {
 	return program, nil
 }
 
-func (p *Parser) parseList() *ast.ListExpression {
-	list := ast.ListExpression{Token: p.curToken}
-
-	p.nextToken()
-
-	if p.curToken.Type == lx.ReservedExpr {
-		callExpr := p.parseReservedExpr()
-		list.Elements = append(list.Elements, callExpr)
-		return &list
+func (p *Parser) parseList() ast.Node {
+	// Expect curToken.Type == LParen
+	if p.curToken.Type != lx.LParen {
+		panic(fmt.Sprintf("[%q] Invalid syntax, %q given, '(' expected", p.curToken.Pos, p.curToken))
 	}
+
+	if p.peekToken.Type == lx.Symbol {
+		result := p.parseNextSymbol()
+		if result != nil {
+			return result
+		}
+	}
+
+	list := ast.NewListExpression(p.curToken)
+	p.nextToken()
 
 	for {
 		switch p.curToken.Type {
 		case lx.LParen:
 			nestedList := p.parseList()
 			if nestedList != nil {
-				list.Elements = append(list.Elements, nestedList)
+				list.Append(nestedList)
 			}
 		case lx.RParen:
-			return &list
+			return list
 		case lx.Int:
-			intLiteral := p.parseInt()
-			list.Elements = append(list.Elements, intLiteral)
-			p.nextToken()
+			list.Append(p.parseInt())
 		case lx.Float:
-			floatLiteral := p.parseFloat()
-			list.Elements = append(list.Elements, floatLiteral)
-			p.nextToken()
-		case lx.ReservedExpr:
-			reservedExpr := p.parseReservedExpr()
-			list.Elements = append(list.Elements, reservedExpr)
+			list.Append(p.parseFloat())
+		case lx.String:
+			list.Append(p.parseString())
+		case lx.Symbol:
+			list.Append(p.parseSymbol())
 		case lx.EOF:
 			panic("Unbalanced parentheses: EOF reached while parsing a list")
 		default:
@@ -88,56 +90,41 @@ func (p *Parser) parseList() *ast.ListExpression {
 }
 
 func (p *Parser) parseInt() *ast.IntLiteral {
-	value, err := strconv.Atoi(p.curToken.Literal)
-	if err != nil {
-		fmt.Printf("ERROR PARSE LIST INT VALUE ATOI")
-		// Throw Error
-	}
-
-	return &ast.IntLiteral{Token: p.curToken, Value: int32(value)}
+	result := ast.NewIntLiteral(p.curToken)
+	p.nextToken()
+	return result
 }
 
 func (p *Parser) parseFloat() *ast.FloatLiteral {
-	value, err := strconv.ParseFloat(p.curToken.Literal, 64)
-	if err != nil {
-		fmt.Printf("ERROR PARSE LIST FLOAT VALUE ATOI")
-		// Throw Error
-	}
-	return &ast.FloatLiteral{Token: p.curToken, Value: value}
+	result := ast.NewFloatLiteral(p.curToken)
+	p.nextToken()
+	return result
 }
 
-func (p *Parser) parseReservedExpr() *ast.CallExpression {
-	callExpr := &ast.CallExpression{Token: p.curToken, Arguments: []ast.Node{}}
+func (p *Parser) parseString() *ast.StringLiteral {
+	result := ast.NewStringLiteral(p.curToken)
 	p.nextToken()
+	return result
+}
 
+func (p *Parser) parseSymbol() *ast.Symbol {
+	result := ast.NewSymbol(p.curToken)
+	p.nextToken()
+	return result
+}
+
+func (p *Parser) parseNextSymbol() ast.Node {
 	for {
-		switch p.curToken.Type {
-		case lx.LParen:
-			list := p.parseList()
-			if list != nil {
-				callExpr.Arguments = append(callExpr.Arguments, list)
-			}
-		case lx.RParen:
-			return callExpr
-		case lx.Int:
-			intLiteral := p.parseInt()
-			callExpr.Arguments = append(callExpr.Arguments, intLiteral)
+		switch p.peekToken.Literal {
+		case "defun":
 			p.nextToken()
-		case lx.Float:
-			floatLiteral := p.parseFloat()
-			callExpr.Arguments = append(callExpr.Arguments, floatLiteral)
+			return p.parseDefun()
+		case "let":
 			p.nextToken()
-		case lx.ReservedExpr:
-			nestedCall := p.parseReservedExpr()
-			callExpr.Arguments = append(callExpr.Arguments, nestedCall)
-		case lx.EOF:
-			panic("Unbalanced parentheses: EOF reached while parsing a reserved expression")
+			return p.parseLet()
 		default:
-			panic(fmt.Sprintf("Unexpected token in reserved expression: %v", p.curToken))
+			// Nothing special
+			return nil
 		}
 	}
-}
-func (p *Parser) parseExpr() *ast.CallExpression {
-	fmt.Print("ERROR PARSE EXPR\n")
-	return nil
 }
