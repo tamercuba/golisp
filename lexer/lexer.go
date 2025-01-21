@@ -58,7 +58,6 @@ func (l *Lexer) NextToken() Token {
 			l.readChar()
 			return tok
 		}
-
 		tok.SetPos(l.posCh, l.posCol)
 		tok.Literal = l.readExpr()
 		if isValidNumber(tok.Literal) {
