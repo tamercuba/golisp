@@ -12,6 +12,7 @@ const (
 	String
 	Int
 	Float
+	Bool
 	EOF
 )
 
