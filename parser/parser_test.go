@@ -236,3 +236,11 @@ func TestDefunDeclarationNode(t *testing.T) {
 	}
 
 }
+
+func TestLetDeclarationWithInvalidName(t *testing.T) {
+	input := `(let @ 1)`
+	l := lexer.NewLexer(input)
+	assert.Panics(t, func() {
+		ParseProgram(l)
+	})
+}
