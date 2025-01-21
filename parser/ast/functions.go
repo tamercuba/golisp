@@ -27,10 +27,10 @@ func (fd FunctionDeclaration) String() string {
 	for _, argName := range fd.Args {
 		argsStrings = append(argsStrings, argName.String())
 	}
-	argsResult := fmt.Sprintf("%q", strings.Join(argsStrings, " "))
-	return fmt.Sprintf("(defun %q (%q) (%q))", fd.Name, argsResult, fd.Body.String())
+	argsResult := fmt.Sprintf("%v", strings.Join(argsStrings, " "))
+	return fmt.Sprintf("(defun %v (%v) (%v))", fd.Name, argsResult, fd.Body.String())
 }
 
 func (fd *FunctionDeclaration) GetValue() any {
-	return fd.Name
+	return fd.Name.GetValue()
 }

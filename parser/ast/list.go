@@ -66,7 +66,7 @@ func (le *ListExpression) Append(node Node) {
 }
 
 func (le *ListExpression) GetValue() any {
-	result := make([]string, le.Size)
+	result := make([]string, le.Size-1)
 	currentNode := le.Head
 
 	for {
