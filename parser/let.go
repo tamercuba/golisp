@@ -13,7 +13,7 @@ func (p *Parser) parseLet() *ast.LetDeclaration {
 	// (let x 10)
 
 	if p.peekToken.Type != lx.Symbol {
-		panic(fmt.Sprintf("%q Type Error. %q isnt a valid binding name", p.peekToken.Pos, p.peekToken))
+		panic(fmt.Sprintf("%v Type Error. %v isnt a valid binding name", p.peekToken.Pos, p.peekToken))
 	}
 	p.nextToken()
 	bindingName := p.parseSymbol()
@@ -32,6 +32,8 @@ func (p *Parser) parseLet() *ast.LetDeclaration {
 		bindingValue = p.parseFloat()
 	case lx.String:
 		bindingValue = p.parseString()
+	case lx.Bool:
+		bindingValue = p.parseBoolean()
 	default:
 		panic(fmt.Sprintf("%q Type Error. %q isnt a valid binding value", p.peekToken.Pos, p.peekToken))
 	}

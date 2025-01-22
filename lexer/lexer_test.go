@@ -193,6 +193,28 @@ func TestStringDeclaration(t *testing.T) {
 	}
 }
 
+func TestValidateListOfStrings(t *testing.T) {
+	input := `("a" "b")`
+	tests := []struct {
+		expectedType    TokenType
+		expectedLiteral string
+	}{
+		{LParen, "("},
+		{String, `"a"`},
+		{String, `"b"`},
+		{RParen, ")"},
+	}
+
+	l := NewLexer(input)
+	for _, tt := range tests {
+		tok := l.NextToken()
+
+		assert.Equal(t, tt.expectedType, tok.Type, fmt.Sprintf("Token literal: %q", tok.Literal))
+		assert.Equal(t, tt.expectedLiteral, tok.Literal)
+	}
+
+}
+
 func TestValidateString(t *testing.T) {
 	expr := `ab'cd`
 	result := isValidSymbol(expr)

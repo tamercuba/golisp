@@ -244,3 +244,48 @@ func TestLetDeclarationWithInvalidName(t *testing.T) {
 		ParseProgram(l)
 	})
 }
+
+func TestListWithBooleanValues(t *testing.T) {
+	input := `(true false)`
+	lexer := lexer.NewLexer(input)
+	result, err := ParseProgram(lexer)
+
+	assert.Nil(t, err)
+	assert.IsType(t, &ast.Program{}, result)
+	assert.Equal(t, 1, len(result.ListStatements))
+
+	s := result.ListStatements[0]
+
+	switch l := s.(type) {
+	case *ast.ListExpression:
+		assert.Equal(t, 2, l.Size)
+		assert.Equal(t, true, l.Head.LNode.GetValue())
+		assert.Equal(t, false, l.Head.Next.LNode.GetValue())
+	default:
+		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", l))
+	}
+
+}
+
+func TestLetWithBooleanValue(t *testing.T) {
+	input := `(let x true)`
+	l := lexer.NewLexer(input)
+	r, err := ParseProgram(l)
+
+	assert.Equal(t, 1, len(r.ListStatements))
+	s := r.ListStatements[0]
+
+	assert.Nil(t, err)
+	assert.IsType(t, &ast.LetDeclaration{}, s)
+	assert.Equal(t, "let", s.GetToken().Literal)
+
+	switch v := s.(type) {
+	case *ast.LetDeclaration:
+		assert.Equal(t, "x", v.Name.String())
+		assert.Equal(t, true, v.Value.GetValue())
+		assert.Equal(t, "(let x true)", fmt.Sprintf("%v", v))
+	default:
+		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", v))
+	}
+
+}

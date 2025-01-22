@@ -35,10 +35,6 @@ func (p *Parser) parseDefun() *ast.FunctionDeclaration {
 	p.nextToken()
 	body := p.parseList()
 
-	if p.peekToken.Type != lx.RParen {
-		panic(fmt.Sprintf("%v Syntax Error. Too many arguments", p.peekToken.Pos))
-	}
-
 	return ast.NewFunctionDeclaration(firstToken, funcName, funcArgs, body)
 }
 
