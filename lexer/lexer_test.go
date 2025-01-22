@@ -147,7 +147,7 @@ func TestFloatDeclaration(t *testing.T) {
 }
 
 func TestPlusExprAreRecognized(t *testing.T) {
-	input := `(+ 1 2)`
+	input := `(+ 1 true)`
 
 	tests := []struct {
 		expectedType    TokenType
@@ -156,7 +156,7 @@ func TestPlusExprAreRecognized(t *testing.T) {
 		{LParen, "("},
 		{Symbol, "+"},
 		{Int, "1"},
-		{Int, "2"},
+		{Bool, "true"},
 		{RParen, ")"},
 	}
 
@@ -191,6 +191,28 @@ func TestStringDeclaration(t *testing.T) {
 		assert.Equal(t, tt.expectedType, tok.Type, fmt.Sprintf("Token literal: %q", tok.Literal))
 		assert.Equal(t, tt.expectedLiteral, tok.Literal)
 	}
+}
+
+func TestValidateListOfStrings(t *testing.T) {
+	input := `("a" "b")`
+	tests := []struct {
+		expectedType    TokenType
+		expectedLiteral string
+	}{
+		{LParen, "("},
+		{String, `"a"`},
+		{String, `"b"`},
+		{RParen, ")"},
+	}
+
+	l := NewLexer(input)
+	for _, tt := range tests {
+		tok := l.NextToken()
+
+		assert.Equal(t, tt.expectedType, tok.Type, fmt.Sprintf("Token literal: %q", tok.Literal))
+		assert.Equal(t, tt.expectedLiteral, tok.Literal)
+	}
+
 }
 
 func TestValidateString(t *testing.T) {

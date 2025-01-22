@@ -34,14 +34,26 @@ func ParseProgram(l *lx.Lexer) (*ast.Program, error) {
 	program.ListStatements = []ast.Node{}
 
 	for p.curToken.Type != lx.EOF {
-		if p.curToken.Type == lx.LParen {
+		switch p.curToken.Type {
+		case lx.LParen:
 			list := p.parseList()
 			if list != nil {
 				program.ListStatements = append(program.ListStatements, list)
 			}
-		} else {
-			// TODO: Maybe throw an error? Idk yet
-			p.nextToken()
+		case lx.Int:
+			n := p.parseInt()
+			program.ListStatements = append(program.ListStatements, n)
+		case lx.Float:
+			n := p.parseFloat()
+			program.ListStatements = append(program.ListStatements, n)
+		case lx.String:
+			n := p.parseString()
+			program.ListStatements = append(program.ListStatements, n)
+		case lx.Bool:
+			n := p.parseBoolean()
+			program.ListStatements = append(program.ListStatements, n)
+		default:
+			panic("INVALID SYNTAX")
 		}
 	}
 
@@ -50,13 +62,10 @@ func ParseProgram(l *lx.Lexer) (*ast.Program, error) {
 
 func (p *Parser) parseList() ast.Node {
 	// Expect curToken.Type == LParen
-	if p.curToken.Type != lx.LParen {
-		panic(fmt.Sprintf("[%q] Invalid syntax, %q given, '(' expected", p.curToken.Pos, p.curToken))
-	}
-
 	if p.peekToken.Type == lx.Symbol {
 		result := p.parseNextSymbol()
 		if result != nil {
+			p.nextToken()
 			return result
 		}
 	}
@@ -72,6 +81,7 @@ func (p *Parser) parseList() ast.Node {
 				list.Append(nestedList)
 			}
 		case lx.RParen:
+			p.nextToken()
 			return list
 		case lx.Int:
 			list.Append(p.parseInt())
@@ -81,12 +91,20 @@ func (p *Parser) parseList() ast.Node {
 			list.Append(p.parseString())
 		case lx.Symbol:
 			list.Append(p.parseSymbol())
+		case lx.Bool:
+			list.Append(p.parseBoolean())
 		case lx.EOF:
-			panic("Unbalanced parentheses: EOF reached while parsing a list")
+			panic(fmt.Sprintf("%v( not closed, expect ).", list.GetToken().Pos))
 		default:
-			panic(fmt.Sprintf("Unexpected token in list: %v", p.curToken))
+			panic(fmt.Sprintf("Unexpected token in list: %+v", p.curToken))
 		}
 	}
+}
+
+func (p *Parser) parseBoolean() *ast.Boolean {
+	result := ast.NewBoolean(p.curToken)
+	p.nextToken()
+	return result
 }
 
 func (p *Parser) parseInt() *ast.IntLiteral {

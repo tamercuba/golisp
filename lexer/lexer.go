@@ -69,11 +69,16 @@ func (l *Lexer) NextToken() Token {
 			return tok
 		} else if isValidString(tok.Literal) {
 			tok.Type = String
+			return tok
+		} else if isValidBool(tok.Literal) {
+			tok.Type = Bool
+			return tok
 		} else if isValidSymbol(tok.Literal) {
 			tok.Type = Symbol
 			return tok
 		} else {
 			tok.Type = IllegalToken
+			return tok
 		}
 	}
 
@@ -109,6 +114,10 @@ func isInteger(expr string) bool {
 
 func isValidSymbol(expr string) bool {
 	return validateRegex(expr, `^[a-zA-Z0-9+\-*/^]+$`)
+}
+
+func isValidBool(expr string) bool {
+	return validateRegex(expr, `^(true|false)$`)
 }
 
 func isValidChar(ch byte) bool {
