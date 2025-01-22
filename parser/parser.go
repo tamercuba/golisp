@@ -49,9 +49,6 @@ func ParseProgram(l *lx.Lexer) (*ast.Program, error) {
 		case lx.String:
 			n := p.parseString()
 			program.ListStatements = append(program.ListStatements, n)
-		case lx.Symbol:
-			n := p.parseSymbol()
-			program.ListStatements = append(program.ListStatements, n)
 		case lx.Bool:
 			n := p.parseBoolean()
 			program.ListStatements = append(program.ListStatements, n)
@@ -65,10 +62,6 @@ func ParseProgram(l *lx.Lexer) (*ast.Program, error) {
 
 func (p *Parser) parseList() ast.Node {
 	// Expect curToken.Type == LParen
-	if p.curToken.Type != lx.LParen {
-		panic(fmt.Sprintf("[%v] Invalid syntax, %q given, '(' expected", p.curToken.Pos, p.curToken))
-	}
-
 	if p.peekToken.Type == lx.Symbol {
 		result := p.parseNextSymbol()
 		if result != nil {
@@ -101,7 +94,7 @@ func (p *Parser) parseList() ast.Node {
 		case lx.Bool:
 			list.Append(p.parseBoolean())
 		case lx.EOF:
-			panic("Unbalanced parentheses: EOF reached while parsing a list. [parseList]")
+			panic(fmt.Sprintf("%v( not closed, expect ).", list.GetToken().Pos))
 		default:
 			panic(fmt.Sprintf("Unexpected token in list: %+v", p.curToken))
 		}

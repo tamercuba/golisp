@@ -89,3 +89,14 @@ func TestFunctionDeclaration(t *testing.T) {
 	assert.Equal(t, "(", l.GetValue())
 	assert.Equal(t, "(", l.GetToken().Literal)
 }
+
+func TestBooleanDeclaration(t *testing.T) {
+	var tok lx.Token
+	tok.Literal = "true"
+	tok.Type = lx.Bool
+	b := NewBoolean(tok)
+
+	assert.Equal(t, "true", fmt.Sprintf("%v", b))
+	assert.Equal(t, true, b.GetValue())
+	assert.Equal(t, "true", b.GetToken().Literal)
+}

@@ -147,7 +147,7 @@ func TestFloatDeclaration(t *testing.T) {
 }
 
 func TestPlusExprAreRecognized(t *testing.T) {
-	input := `(+ 1 2)`
+	input := `(+ 1 true)`
 
 	tests := []struct {
 		expectedType    TokenType
@@ -156,7 +156,7 @@ func TestPlusExprAreRecognized(t *testing.T) {
 		{LParen, "("},
 		{Symbol, "+"},
 		{Int, "1"},
-		{Int, "2"},
+		{Bool, "true"},
 		{RParen, ")"},
 	}
 

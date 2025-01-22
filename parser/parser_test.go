@@ -210,7 +210,6 @@ func TestLetWithStringValue(t *testing.T) {
 	default:
 		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", v))
 	}
-
 }
 
 func TestDefunDeclarationNode(t *testing.T) {
@@ -234,7 +233,6 @@ func TestDefunDeclarationNode(t *testing.T) {
 	default:
 		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", v))
 	}
-
 }
 
 func TestLetDeclarationWithInvalidName(t *testing.T) {
@@ -264,7 +262,6 @@ func TestListWithBooleanValues(t *testing.T) {
 	default:
 		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", l))
 	}
-
 }
 
 func TestLetWithBooleanValue(t *testing.T) {
@@ -287,5 +284,62 @@ func TestLetWithBooleanValue(t *testing.T) {
 	default:
 		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", v))
 	}
+}
 
+func TestIntAloneInput(t *testing.T) {
+	input := `1`
+	l := lexer.NewLexer(input)
+	r, err := ParseProgram(l)
+
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(r.ListStatements))
+
+	s := r.ListStatements[0]
+
+	assert.Equal(t, "1", s.String())
+	assert.Equal(t, int32(1), s.GetValue())
+	assert.IsType(t, &ast.IntLiteral{}, s)
+}
+
+func TestFloatAloneInput(t *testing.T) {
+	input := `1.2`
+	l := lexer.NewLexer(input)
+	r, err := ParseProgram(l)
+
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(r.ListStatements))
+
+	s := r.ListStatements[0]
+
+	assert.Equal(t, "1.200000f", s.String())
+	assert.Equal(t, 1.2, s.GetValue())
+	assert.IsType(t, &ast.FloatLiteral{}, s)
+}
+
+func TestBooleanAlone(t *testing.T) {
+	input := `true`
+	l := lexer.NewLexer(input)
+	r, err := ParseProgram(l)
+
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(r.ListStatements))
+
+	s := r.ListStatements[0]
+
+	assert.Equal(t, "true", s.String())
+	assert.Equal(t, true, s.GetValue())
+	assert.IsType(t, &ast.Boolean{}, s)
+}
+
+func TestUnbalancedList(t *testing.T) {
+	input := `(1 2`
+	l := lexer.NewLexer(input)
+
+	defer func() {
+		if r := recover(); r != nil {
+			expectedMessage := "0:0 ( not closed, expect )."
+			assert.Equal(t, expectedMessage, r)
+		}
+	}()
+	ParseProgram(l)
 }
