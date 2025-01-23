@@ -220,3 +220,24 @@ func TestValidateString(t *testing.T) {
 	result := isValidSymbol(expr)
 	assert.False(t, result)
 }
+
+func TestValidateNilStatement(t *testing.T) {
+	input := `(1 nil)`
+	tests := []struct {
+		expectedType    TokenType
+		expectedLiteral string
+	}{
+		{LParen, "("},
+		{Int, `1`},
+		{Void, `nil`},
+		{RParen, ")"},
+	}
+
+	l := NewLexer(input)
+	for _, tt := range tests {
+		tok := l.NextToken()
+
+		assert.Equal(t, tt.expectedType, tok.Type, fmt.Sprintf("Token literal: %q", tok.Literal))
+		assert.Equal(t, tt.expectedLiteral, tok.Literal)
+	}
+}

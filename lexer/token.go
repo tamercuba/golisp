@@ -13,6 +13,7 @@ const (
 	Int
 	Float
 	Bool
+	Void
 	EOF
 )
 
