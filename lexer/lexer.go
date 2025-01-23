@@ -73,6 +73,9 @@ func (l *Lexer) NextToken() Token {
 		} else if isValidBool(tok.Literal) {
 			tok.Type = Bool
 			return tok
+		} else if isValidNil(tok.Literal) {
+			tok.Type = Void
+			return tok
 		} else if isValidSymbol(tok.Literal) {
 			tok.Type = Symbol
 			return tok
@@ -98,6 +101,10 @@ func (l *Lexer) readExpr() string {
 func validateRegex(expr string, regex string) bool {
 	re := regexp.MustCompile(regex)
 	return re.MatchString(expr)
+}
+
+func isValidNil(expr string) bool {
+	return validateRegex(expr, `^(nil)$`)
 }
 
 func isValidString(expr string) bool {

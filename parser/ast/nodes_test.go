@@ -100,3 +100,14 @@ func TestBooleanDeclaration(t *testing.T) {
 	assert.Equal(t, true, b.GetValue())
 	assert.Equal(t, "true", b.GetToken().Literal)
 }
+
+func TestNilNode(t *testing.T) {
+	var tok lx.Token
+	tok.Literal = "nil"
+	tok.Type = lx.Void
+	n := NewVoidNode(tok)
+
+	assert.Equal(t, "nil", fmt.Sprintf("%v", n))
+	assert.Nil(t, n.GetValue())
+	assert.Equal(t, "nil", n.GetToken().Literal)
+}
