@@ -34,6 +34,8 @@ func (p *Parser) parseLet() *ast.LetDeclaration {
 		bindingValue = p.parseString()
 	case lx.Bool:
 		bindingValue = p.parseBoolean()
+	case lx.Void:
+		bindingValue = p.parseVoid()
 	default:
 		panic(fmt.Sprintf("%q Type Error. %q isnt a valid binding value", p.peekToken.Pos, p.peekToken))
 	}

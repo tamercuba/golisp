@@ -343,3 +343,51 @@ func TestUnbalancedList(t *testing.T) {
 	}()
 	ParseProgram(l)
 }
+
+func TestAssignmentWithNilValue(t *testing.T) {
+	input := `(let x nil)`
+	l := lexer.NewLexer(input)
+	r, err := ParseProgram(l)
+
+	assert.Equal(t, 1, len(r.ListStatements))
+	s := r.ListStatements[0]
+
+	assert.Nil(t, err)
+	assert.IsType(t, &ast.LetDeclaration{}, s)
+	assert.Equal(t, "let", s.GetToken().Literal)
+
+	switch v := s.(type) {
+	case *ast.LetDeclaration:
+		assert.Equal(t, "x", v.Name.String())
+		assert.Nil(t, v.Value.GetValue())
+		assert.Equal(t, "(let x nil)", fmt.Sprintf("%v", v))
+	default:
+		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", v))
+	}
+}
+
+func TestNil(t *testing.T) {
+	input := `nil`
+	l := lexer.NewLexer(input)
+	r, err := ParseProgram(l)
+
+	assert.Equal(t, 1, len(r.ListStatements))
+	s := r.ListStatements[0]
+
+	assert.Nil(t, err)
+	assert.IsType(t, &ast.VoidNode{}, s)
+	assert.Nil(t, s.GetValue())
+	assert.Equal(t, "nil", s.String())
+}
+
+func TestListWithNilValue(t *testing.T) {
+	input := `(1 nil 2 nil)`
+	l := lexer.NewLexer(input)
+	r, err := ParseProgram(l)
+
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(r.ListStatements))
+	s := r.ListStatements[0]
+
+	assert.IsType(t, &ast.ListExpression{}, s)
+}

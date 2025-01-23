@@ -52,6 +52,9 @@ func ParseProgram(l *lx.Lexer) (*ast.Program, error) {
 		case lx.Bool:
 			n := p.parseBoolean()
 			program.ListStatements = append(program.ListStatements, n)
+		case lx.Void:
+			n := p.parseVoid()
+			program.ListStatements = append(program.ListStatements, n)
 		default:
 			panic("INVALID SYNTAX")
 		}
@@ -93,6 +96,8 @@ func (p *Parser) parseList() ast.Node {
 			list.Append(p.parseSymbol())
 		case lx.Bool:
 			list.Append(p.parseBoolean())
+		case lx.Void:
+			list.Append(p.parseVoid())
 		case lx.EOF:
 			panic(fmt.Sprintf("%v( not closed, expect ).", list.GetToken().Pos))
 		default:
@@ -121,6 +126,12 @@ func (p *Parser) parseFloat() *ast.FloatLiteral {
 
 func (p *Parser) parseString() *ast.StringLiteral {
 	result := ast.NewStringLiteral(p.curToken)
+	p.nextToken()
+	return result
+}
+
+func (p *Parser) parseVoid() *ast.VoidNode {
+	result := ast.NewVoidNode(p.curToken)
 	p.nextToken()
 	return result
 }
