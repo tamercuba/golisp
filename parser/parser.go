@@ -151,6 +151,9 @@ func (p *Parser) parseNextSymbol() ast.Node {
 		case "let":
 			p.nextToken()
 			return p.parseLet()
+		case "lambda":
+			p.nextToken()
+			return p.parseLambda()
 		default:
 			// Nothing special
 			return nil

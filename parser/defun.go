@@ -14,34 +14,46 @@ func (p *Parser) parseDefun() *ast.FunctionDeclaration {
 	if p.peekToken.Type != lx.Symbol {
 		panic(fmt.Sprintf("%v Type Error. %v isnt a valid function name", p.peekToken.Pos, p.peekToken))
 	}
-
 	p.nextToken()
 	funcName := ast.NewSymbol(p.curToken)
-
-	//        c p
-	// (defun x (y) (+ 1 y))
-	if p.peekToken.Type != lx.LParen {
-		panic(fmt.Sprintf("%v Type Error. Function args should be a List, not %v", p.peekToken.Pos, p.peekToken))
-	}
-
 	p.nextToken()
-	funcArgs := p.parseDefunArgs()
 
-	//              cp
-	// (defun x (y) (+ 1 y))
+	funcArgs := p.getFunctionArgs()
+	body := p.getFunctionBody()
+	return ast.NewFunctionDeclaration(firstToken, funcName, funcArgs, body)
+}
+
+func (p *Parser) parseLambda() *ast.LambdaNode {
+	//  c      p
+	// (lambda (x y) (+ x y))
+	firstToken := p.curToken
+	p.nextToken()
+	funcArgs := p.getFunctionArgs()
+	body := p.getFunctionBody()
+
+	return ast.NewLambdaNode(firstToken, funcArgs, body)
+}
+
+func (p *Parser) getFunctionBody() ast.Node {
+	//               cp
+	// (lambda (x y) (+ x y))
 	if p.peekToken.Type != lx.LParen {
 		panic(fmt.Sprintf("%v Type Error. Function body should be a list, not %v", p.peekToken.Pos, p.peekToken))
 	}
 	p.nextToken()
 	body := p.parseList()
-
-	return ast.NewFunctionDeclaration(firstToken, funcName, funcArgs, body)
+	return body
 }
 
-func (p *Parser) parseDefunArgs() []ast.Symbol {
+func (p *Parser) getFunctionArgs() []ast.Symbol {
 	//          cp
 	// (defun x (y) (+ 1 y))
+	if p.curToken.Type != lx.LParen {
+		panic(fmt.Sprintf("%v Type Error. Function args should be a List, not %v", p.peekToken.Pos, p.peekToken))
+	}
+
 	p.nextToken()
+
 	//           c p
 	// (defun x (y z) (+ z y))
 	args := []ast.Symbol{}
@@ -54,7 +66,7 @@ func (p *Parser) parseDefunArgs() []ast.Symbol {
 		case lx.RParen:
 			return args
 		default:
-			panic(fmt.Sprintf("%v Invalid Syntax. %v Should be a valid function argument or )", p.curToken.Pos, p.curToken))
+			panic(fmt.Sprintf("%+v Invalid Syntax. %+v Should be a valid function argument or )", p.curToken.Pos, p.curToken))
 		}
 	}
 }
