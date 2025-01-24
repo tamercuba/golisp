@@ -148,7 +148,7 @@ func (p *Parser) parseNextSymbol() ast.Node {
 		case "defun":
 			p.nextToken()
 			return p.parseDefun()
-		case "let":
+		case "let", "define":
 			p.nextToken()
 			return p.parseLet()
 		case "lambda":
