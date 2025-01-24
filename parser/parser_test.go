@@ -212,29 +212,6 @@ func TestLetWithStringValue(t *testing.T) {
 	}
 }
 
-func TestDefunDeclarationNode(t *testing.T) {
-	input := `(defun x (y z) (+ y z))`
-	l := lexer.NewLexer(input)
-	r, err := ParseProgram(l)
-
-	assert.Equal(t, 1, len(r.ListStatements))
-	s := r.ListStatements[0]
-
-	assert.Nil(t, err)
-	assert.IsType(t, &ast.FunctionDeclaration{}, s)
-	assert.Equal(t, "defun", s.GetToken().Literal)
-
-	switch v := s.(type) {
-	case *ast.FunctionDeclaration:
-		assert.Equal(t, "x", v.Name.String())
-		assert.IsType(t, "y", v.Args[0].String())
-		assert.IsType(t, "z", v.Args[1].String())
-		assert.IsType(t, &ast.ListExpression{}, v.Body)
-	default:
-		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", v))
-	}
-}
-
 func TestVarDifinitionNodeWithInvalidName(t *testing.T) {
 	input := `(let @ 1)`
 	l := lexer.NewLexer(input)

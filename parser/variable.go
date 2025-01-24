@@ -7,7 +7,7 @@ import (
 	"github.com/tamercuba/golisp/parser/ast"
 )
 
-func (p *Parser) parseLet() *ast.VarDifinitionNode {
+func (p *Parser) parseVar() *ast.VarDifinitionNode {
 	firstToken := p.curToken
 	//   c  p
 	// (let x 10)

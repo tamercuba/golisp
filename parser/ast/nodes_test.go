@@ -78,18 +78,6 @@ func TestListNode(t *testing.T) {
 	}
 }
 
-func TestFunctionDeclaration(t *testing.T) {
-	tok := lx.NewToken(0x28, lx.Symbol, 0, 0)
-	name := NewSymbol(tok)
-	args := []Symbol{}
-	body := Symbol{}
-	l := NewFunctionDeclaration(tok, name, args, &body)
-
-	assert.Equal(t, "(defun ( () ())", fmt.Sprintf("%v", l))
-	assert.Equal(t, "(", l.GetValue())
-	assert.Equal(t, "(", l.GetToken().Literal)
-}
-
 func TestBooleanDeclaration(t *testing.T) {
 	var tok lx.Token
 	tok.Literal = "true"

@@ -145,12 +145,9 @@ func (p *Parser) parseSymbol() *ast.Symbol {
 func (p *Parser) parseNextSymbol() ast.Node {
 	for {
 		switch p.peekToken.Literal {
-		case "defun":
-			p.nextToken()
-			return p.parseDefun()
 		case "let", "define":
 			p.nextToken()
-			return p.parseLet()
+			return p.parseVar()
 		case "lambda":
 			p.nextToken()
 			return p.parseLambda()
