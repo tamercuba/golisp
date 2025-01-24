@@ -111,3 +111,18 @@ func TestNilNode(t *testing.T) {
 	assert.Nil(t, n.GetValue())
 	assert.Equal(t, "nil", n.GetToken().Literal)
 }
+
+func TestLambdaNode(t *testing.T) {
+	var tok lx.Token
+	tok.Literal = "lambda"
+	tok.Type = lx.Symbol
+	args := []Symbol{}
+
+	var lTok lx.Token
+	tok.Literal = "("
+	tok.Type = lx.LParen
+	body := NewListExpression(lTok)
+	l := NewLambdaNode(tok, args, body)
+
+	assert.Equal(t, "(lambda () ())", fmt.Sprintf("%v", l))
+}

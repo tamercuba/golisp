@@ -391,3 +391,42 @@ func TestListWithNilValue(t *testing.T) {
 
 	assert.IsType(t, &ast.ListExpression{}, s)
 }
+
+func TestLambdaDeclaration(t *testing.T) {
+	input := `(lambda (x y) (+ x y))`
+	l := lexer.NewLexer(input)
+	r, err := ParseProgram(l)
+
+	assert.Nil(t, err)
+	assert.IsType(t, 1, len(r.ListStatements))
+
+	p := r.ListStatements[0]
+	assert.IsType(t, &ast.LambdaNode{}, p)
+
+	switch l := p.(type) {
+	case *ast.LambdaNode:
+		assert.Equal(t, "x", l.Args[0].GetValue())
+		assert.Equal(t, "y", l.Args[1].GetValue())
+		switch b := l.Body.(type) {
+		case *ast.ListExpression:
+			assert.Equal(t, 3, b.Size)
+		default:
+			assert.Fail(t, fmt.Sprintf("Invalid type: %+v", l))
+		}
+	default:
+		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", l))
+	}
+}
+
+func TestLambdaWithWrongSyntax(t *testing.T) {
+	input := `(lambda x (+ x x))`
+	l := lexer.NewLexer(input)
+
+	defer func() {
+		if r := recover(); r != nil {
+			expectedMessage := "0:10  Type Error. Function args should be a List, not {0 ( 0:10 }"
+			assert.Equal(t, expectedMessage, r)
+		}
+	}()
+	ParseProgram(l)
+}
