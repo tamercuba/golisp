@@ -138,7 +138,7 @@ func TestNestedFunctionCalls(t *testing.T) {
 	}
 }
 
-func TestLetDeclarationNode(t *testing.T) {
+func TestVarDifinitionNodeNode(t *testing.T) {
 	input := `(let x 10)`
 	l := lexer.NewLexer(input)
 	r, err := ParseProgram(l)
@@ -147,11 +147,11 @@ func TestLetDeclarationNode(t *testing.T) {
 	s := r.ListStatements[0]
 
 	assert.Nil(t, err)
-	assert.IsType(t, &ast.LetDeclaration{}, s)
+	assert.IsType(t, &ast.VarDifinitionNode{}, s)
 	assert.Equal(t, "let", s.GetToken().Literal)
 
 	switch v := s.(type) {
-	case *ast.LetDeclaration:
+	case *ast.VarDifinitionNode:
 		assert.Equal(t, "x", v.Name.String())
 		assert.Equal(t, int32(10), v.Value.GetValue())
 		assert.Equal(t, "(let x 10)", fmt.Sprintf("%v", v))
@@ -160,7 +160,7 @@ func TestLetDeclarationNode(t *testing.T) {
 	}
 }
 
-func TestLetDeclarationWithNestedList(t *testing.T) {
+func TestVarDifinitionNodeWithNestedList(t *testing.T) {
 	input := `(let x (+ 1 2))`
 	l := lexer.NewLexer(input)
 	r, err := ParseProgram(l)
@@ -169,11 +169,11 @@ func TestLetDeclarationWithNestedList(t *testing.T) {
 	s := r.ListStatements[0]
 
 	assert.Nil(t, err)
-	assert.IsType(t, &ast.LetDeclaration{}, s)
+	assert.IsType(t, &ast.VarDifinitionNode{}, s)
 	assert.Equal(t, "let", s.GetToken().Literal)
 
 	switch v := s.(type) {
-	case *ast.LetDeclaration:
+	case *ast.VarDifinitionNode:
 		assert.Equal(t, "x", v.Name.String())
 		assert.IsType(t, &ast.ListExpression{}, v.Value)
 		assert.Equal(t, "(let x (+ 1 2))", fmt.Sprintf("%v", v))
@@ -199,11 +199,11 @@ func TestLetWithStringValue(t *testing.T) {
 	s := r.ListStatements[0]
 
 	assert.Nil(t, err)
-	assert.IsType(t, &ast.LetDeclaration{}, s)
+	assert.IsType(t, &ast.VarDifinitionNode{}, s)
 	assert.Equal(t, "let", s.GetToken().Literal)
 
 	switch v := s.(type) {
-	case *ast.LetDeclaration:
+	case *ast.VarDifinitionNode:
 		assert.Equal(t, "x", v.Name.String())
 		assert.Equal(t, "a", v.Value.GetValue())
 		assert.Equal(t, "(let x 'a')", fmt.Sprintf("%v", v))
@@ -212,30 +212,7 @@ func TestLetWithStringValue(t *testing.T) {
 	}
 }
 
-func TestDefunDeclarationNode(t *testing.T) {
-	input := `(defun x (y z) (+ y z))`
-	l := lexer.NewLexer(input)
-	r, err := ParseProgram(l)
-
-	assert.Equal(t, 1, len(r.ListStatements))
-	s := r.ListStatements[0]
-
-	assert.Nil(t, err)
-	assert.IsType(t, &ast.FunctionDeclaration{}, s)
-	assert.Equal(t, "defun", s.GetToken().Literal)
-
-	switch v := s.(type) {
-	case *ast.FunctionDeclaration:
-		assert.Equal(t, "x", v.Name.String())
-		assert.IsType(t, "y", v.Args[0].String())
-		assert.IsType(t, "z", v.Args[1].String())
-		assert.IsType(t, &ast.ListExpression{}, v.Body)
-	default:
-		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", v))
-	}
-}
-
-func TestLetDeclarationWithInvalidName(t *testing.T) {
+func TestVarDifinitionNodeWithInvalidName(t *testing.T) {
 	input := `(let @ 1)`
 	l := lexer.NewLexer(input)
 	assert.Panics(t, func() {
@@ -273,16 +250,75 @@ func TestLetWithBooleanValue(t *testing.T) {
 	s := r.ListStatements[0]
 
 	assert.Nil(t, err)
-	assert.IsType(t, &ast.LetDeclaration{}, s)
+	assert.IsType(t, &ast.VarDifinitionNode{}, s)
 	assert.Equal(t, "let", s.GetToken().Literal)
 
 	switch v := s.(type) {
-	case *ast.LetDeclaration:
+	case *ast.VarDifinitionNode:
 		assert.Equal(t, "x", v.Name.String())
 		assert.Equal(t, true, v.Value.GetValue())
 		assert.Equal(t, "(let x true)", fmt.Sprintf("%v", v))
+		assert.Equal(t, ast.LET, v.DefinitionType)
 	default:
 		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", v))
+	}
+}
+
+func TestDefineWithBooleanValue(t *testing.T) {
+	input := `(define x true)`
+	l := lexer.NewLexer(input)
+	r, err := ParseProgram(l)
+
+	assert.Equal(t, 1, len(r.ListStatements))
+	s := r.ListStatements[0]
+
+	assert.Nil(t, err)
+	assert.IsType(t, &ast.VarDifinitionNode{}, s)
+	assert.Equal(t, "define", s.GetToken().Literal)
+
+	switch v := s.(type) {
+	case *ast.VarDifinitionNode:
+		assert.Equal(t, "x", v.Name.String())
+		assert.Equal(t, true, v.Value.GetValue())
+		assert.Equal(t, "(define x true)", fmt.Sprintf("%v", v))
+		assert.Equal(t, ast.DEFINE, v.DefinitionType)
+	default:
+		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", v))
+	}
+}
+
+func TestDefineLambda(t *testing.T) {
+	input := `
+    (define func
+      (lambda (x) (+ x x))
+    )
+  `
+	l := lexer.NewLexer(input)
+	r, err := ParseProgram(l)
+
+	assert.Nil(t, err)
+
+	ll := r.ListStatements[0]
+	assert.IsType(t, &ast.VarDifinitionNode{}, ll)
+	assert.Equal(t, "define", ll.GetToken().Literal)
+	assert.IsType(t, &ast.LambdaNode{}, ll.GetValue())
+
+	switch ln := ll.GetValue().(type) {
+	case *ast.LambdaNode:
+		assert.Equal(t, 1, len(ln.Args))
+		assert.Equal(t, "x", ln.Args[0].GetValue())
+		switch lb := ln.Body.(type) {
+		case *ast.ListExpression:
+			assert.Equal(t, 3, lb.Size)
+			assert.Equal(t, "+", lb.Head.LNode.GetValue())
+			assert.Equal(t, "x", lb.Head.Next.LNode.GetValue())
+			assert.Equal(t, "x", lb.Head.Next.Next.LNode.GetValue())
+			assert.Nil(t, lb.Head.Next.Next.Next)
+		default:
+			assert.Fail(t, fmt.Sprintf("Invalid type: %+v", ln))
+		}
+	default:
+		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", ln))
 	}
 }
 
@@ -353,11 +389,11 @@ func TestAssignmentWithNilValue(t *testing.T) {
 	s := r.ListStatements[0]
 
 	assert.Nil(t, err)
-	assert.IsType(t, &ast.LetDeclaration{}, s)
+	assert.IsType(t, &ast.VarDifinitionNode{}, s)
 	assert.Equal(t, "let", s.GetToken().Literal)
 
 	switch v := s.(type) {
-	case *ast.LetDeclaration:
+	case *ast.VarDifinitionNode:
 		assert.Equal(t, "x", v.Name.String())
 		assert.Nil(t, v.Value.GetValue())
 		assert.Equal(t, "(let x nil)", fmt.Sprintf("%v", v))

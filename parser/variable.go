@@ -7,7 +7,7 @@ import (
 	"github.com/tamercuba/golisp/parser/ast"
 )
 
-func (p *Parser) parseLet() *ast.LetDeclaration {
+func (p *Parser) parseVar() *ast.VarDifinitionNode {
 	firstToken := p.curToken
 	//   c  p
 	// (let x 10)
@@ -42,5 +42,5 @@ func (p *Parser) parseLet() *ast.LetDeclaration {
 
 	p.nextToken()
 
-	return ast.NewLetDeclaration(firstToken, bindingName, bindingValue)
+	return ast.NewVarDifinitionNode(firstToken, bindingName, bindingValue)
 }

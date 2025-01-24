@@ -7,22 +7,6 @@ import (
 	"github.com/tamercuba/golisp/parser/ast"
 )
 
-func (p *Parser) parseDefun() *ast.FunctionDeclaration {
-	firstToken := p.curToken
-	//    c   p
-	// (defun x (y) (+ 1 y))
-	if p.peekToken.Type != lx.Symbol {
-		panic(fmt.Sprintf("%v Type Error. %v isnt a valid function name", p.peekToken.Pos, p.peekToken))
-	}
-	p.nextToken()
-	funcName := ast.NewSymbol(p.curToken)
-	p.nextToken()
-
-	funcArgs := p.getFunctionArgs()
-	body := p.getFunctionBody()
-	return ast.NewFunctionDeclaration(firstToken, funcName, funcArgs, body)
-}
-
 func (p *Parser) parseLambda() *ast.LambdaNode {
 	//  c      p
 	// (lambda (x y) (+ x y))

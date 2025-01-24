@@ -42,7 +42,7 @@ func TestIllegalToken(t *testing.T) {
 }
 
 func TestDefunBasicDeclaration(t *testing.T) {
-	input := `(defun x abc)`
+	input := `(define x abc)`
 
 	tests := []struct {
 		expectedType    TokenType
@@ -51,10 +51,10 @@ func TestDefunBasicDeclaration(t *testing.T) {
 		posCol          int
 	}{
 		{LParen, "(", 0, 0},
-		{Symbol, "defun", 1, 0},
-		{Symbol, "x", 7, 0},
-		{Symbol, "abc", 9, 0},
-		{RParen, ")", 12, 0},
+		{Symbol, "define", 1, 0},
+		{Symbol, "x", 8, 0},
+		{Symbol, "abc", 10, 0},
+		{RParen, ")", 13, 0},
 	}
 
 	l := NewLexer(input)
@@ -98,15 +98,15 @@ func TestPositionTracker(t *testing.T) {
 
 }
 
-func TestDefunDeclarationWithDashChar(t *testing.T) {
-	input := `(defun variable-with-dash 10)`
+func TestDefineWithDashChar(t *testing.T) {
+	input := `(define variable-with-dash 10)`
 
 	tests := []struct {
 		expectedType    TokenType
 		expectedLiteral string
 	}{
 		{LParen, "("},
-		{Symbol, "defun"},
+		{Symbol, "define"},
 		{Symbol, "variable-with-dash"},
 		{Int, "10"},
 		{RParen, ")"},
@@ -123,14 +123,14 @@ func TestDefunDeclarationWithDashChar(t *testing.T) {
 }
 
 func TestFloatDeclaration(t *testing.T) {
-	input := `(defun x 10.1)`
+	input := `(define x 10.1)`
 
 	tests := []struct {
 		expectedType    TokenType
 		expectedLiteral string
 	}{
 		{LParen, "("},
-		{Symbol, "defun"},
+		{Symbol, "define"},
 		{Symbol, "x"},
 		{Float, "10.1"},
 		{RParen, ")"},
