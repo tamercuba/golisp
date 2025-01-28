@@ -40,7 +40,5 @@ func (p *Parser) parseVar() *ast.VarDifinitionNode {
 		panic(fmt.Sprintf("%q Type Error. %q isnt a valid binding value", p.peekToken.Pos, p.peekToken))
 	}
 
-	p.nextToken()
-
 	return ast.NewVarDifinitionNode(firstToken, bindingName, bindingValue)
 }

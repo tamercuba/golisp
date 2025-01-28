@@ -56,7 +56,7 @@ func ParseProgram(l *lx.Lexer) (*ast.Program, error) {
 			n := p.parseVoid()
 			program.ListStatements = append(program.ListStatements, n)
 		default:
-			panic("INVALID SYNTAX")
+			panic(fmt.Sprintf("INVALID SYNTAX: %+v\n", p.curToken))
 		}
 	}
 
@@ -104,6 +104,7 @@ func (p *Parser) parseList() ast.Node {
 			panic(fmt.Sprintf("Unexpected token in list: %+v", p.curToken))
 		}
 	}
+
 }
 
 func (p *Parser) parseBoolean() *ast.Boolean {
@@ -152,8 +153,13 @@ func (p *Parser) parseNextSymbol() ast.Node {
 			p.nextToken()
 			return p.parseLambda()
 		default:
-			// Nothing special
-			return nil
+			if ast.IsValidOperation(p.peekToken.Literal) {
+				p.nextToken()
+				return p.parseOperation()
+			} else {
+				// Nothing special
+				return nil
+			}
 		}
 	}
 }

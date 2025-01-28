@@ -14,18 +14,18 @@ type Object interface {
 
 const (
 	INT_TYPE     ObjectType = "INT_TYPE"
-	FLOAT_TYPE              = "FLOAT_TYPE"
-	STRING_TYPE             = "STRING_TYPE"
-	BOOLEAN_TYPE            = "BOOLEAN_TYPE"
-	NIL_TYPE                = "NIL_TYPE"
-	LIST_TYPE               = "LIST_TYPE"
+	FLOAT_TYPE   ObjectType = "FLOAT_TYPE"
+	STRING_TYPE  ObjectType = "STRING_TYPE"
+	BOOLEAN_TYPE ObjectType = "BOOLEAN_TYPE"
+	NIL_TYPE     ObjectType = "NIL_TYPE"
+	LIST_TYPE    ObjectType = "LIST_TYPE"
 )
 
 type Integer struct {
 	Value int32
 }
 
-func (i *Integer) Type() ObjectType {
+func (i Integer) Type() ObjectType {
 	return INT_TYPE
 }
 
@@ -37,7 +37,7 @@ type Float struct {
 	Value float64
 }
 
-func (f *Float) Type() ObjectType {
+func (f Float) Type() ObjectType {
 	return FLOAT_TYPE
 }
 
@@ -49,7 +49,7 @@ type String struct {
 	Value string
 }
 
-func (s *String) Type() ObjectType {
+func (s String) Type() ObjectType {
 	return STRING_TYPE
 }
 
@@ -61,7 +61,7 @@ type Boolean struct {
 	Value bool
 }
 
-func (b *Boolean) Type() ObjectType {
+func (b Boolean) Type() ObjectType {
 	return BOOLEAN_TYPE
 }
 
@@ -75,7 +75,7 @@ func (b Boolean) Inspect() string {
 
 type Nil struct{}
 
-func (n *Nil) Type() ObjectType {
+func (n Nil) Type() ObjectType {
 	return NIL_TYPE
 }
 
@@ -87,7 +87,7 @@ type List struct {
 	Content []Object
 }
 
-func (l *List) Type() ObjectType {
+func (l List) Type() ObjectType {
 	return LIST_TYPE
 }
 

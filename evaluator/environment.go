@@ -19,15 +19,17 @@ func NewEnvironment() *Envinronment {
 	}
 }
 
-func (e *Envinronment) NewScope() {
+func (e *Envinronment) newScope() *Envinronment {
 	ne := NewEnvironment()
 	ne.outerScope = e
-	*e = *ne
+	return ne
 }
 
-func (e *Envinronment) DropScope() {
+func (e *Envinronment) dropScope() *Envinronment {
 	if e.outerScope != nil {
-		*e = *(e.outerScope)
+		return e.outerScope
+	} else {
+		return e
 	}
 }
 
@@ -51,13 +53,15 @@ func (e *Envinronment) BindGlobal(name string, value ast.Node) error {
 
 func (e *Envinronment) Get(name string) ast.Node {
 	if e.outerScope != nil {
-		return e.outerScope.Get(name)
-	} else {
-		v, ok := e.vars[name]
-		if ok {
-			return v
-		} else {
-			return nil
+		value := e.outerScope.Get(name)
+		if value != nil {
+			return value
 		}
+	}
+	v, ok := e.vars[name]
+	if ok {
+		return v
+	} else {
+		return nil
 	}
 }

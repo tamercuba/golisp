@@ -112,11 +112,11 @@ func isValidString(expr string) bool {
 }
 
 func isValidNumber(expr string) bool {
-	return validateRegex(expr, `^\d+(\.\d+)?$`)
+	return validateRegex(expr, `^-?\d+(\.\d+)?$`)
 }
 
 func isInteger(expr string) bool {
-	return validateRegex(expr, `^\d+$`)
+	return validateRegex(expr, `^-?\d+$`)
 }
 
 func isValidSymbol(expr string) bool {
