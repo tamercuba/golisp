@@ -91,14 +91,11 @@ func TestParseSumOfIntegers(t *testing.T) {
 
 	s := result.ListStatements[0]
 	switch l := s.(type) {
-	case *ast.ListExpression:
-		assert.Equal(t, 3, l.Size)
-		assert.NotNil(t, l.Head)
-		assert.Equal(t, "+", l.Head.LNode.GetToken().Literal)
-		assert.NotNil(t, l.Head.Next)
-		assert.Equal(t, int32(1), l.Head.Next.LNode.GetValue())
-		assert.NotNil(t, l.Head.Next.Next)
-		assert.Equal(t, "x", l.Head.Next.Next.LNode.GetValue())
+	case *ast.OperationNode:
+		assert.Equal(t, "+", l.Name.String())
+		assert.Equal(t, 2, len(l.Params))
+		assert.IsType(t, &ast.IntLiteral{}, l.Params[0])
+		assert.IsType(t, &ast.Symbol{}, l.Params[1])
 	default:
 		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", l))
 	}
@@ -115,7 +112,7 @@ func TestTwoStatements(t *testing.T) {
 	assert.Equal(t, 2, len(result.ListStatements))
 
 	assert.IsType(t, &ast.ListExpression{}, result.ListStatements[0])
-	assert.IsType(t, &ast.ListExpression{}, result.ListStatements[1])
+	assert.IsType(t, &ast.OperationNode{}, result.ListStatements[1])
 }
 
 func TestNestedFunctionCalls(t *testing.T) {
@@ -130,9 +127,17 @@ func TestNestedFunctionCalls(t *testing.T) {
 	s := result.ListStatements[0]
 
 	switch l := s.(type) {
-	case *ast.ListExpression:
-		assert.Equal(t, 3, l.Size)
-		assert.IsType(t, &ast.ListExpression{}, l.Head.Next.Next.LNode)
+	case *ast.OperationNode:
+		assert.Equal(t, 2, len(l.Params))
+		assert.IsType(t, &ast.IntLiteral{}, l.Params[0])
+		switch p1 := l.Params[1].(type) {
+		case *ast.OperationNode:
+			assert.Equal(t, 2, len(p1.Params))
+			assert.IsType(t, &ast.IntLiteral{}, p1.Params[0])
+			assert.IsType(t, &ast.IntLiteral{}, p1.Params[1])
+		default:
+			assert.Fail(t, fmt.Sprintf("Invalid type: %+v", l))
+		}
 	default:
 		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", l))
 	}
@@ -175,7 +180,7 @@ func TestVarDifinitionNodeWithNestedList(t *testing.T) {
 	switch v := s.(type) {
 	case *ast.VarDifinitionNode:
 		assert.Equal(t, "x", v.Name.String())
-		assert.IsType(t, &ast.ListExpression{}, v.Value)
+		assert.IsType(t, &ast.OperationNode{}, v.Value)
 		assert.Equal(t, "(let x (+ 1 2))", fmt.Sprintf("%v", v))
 	default:
 		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", v))
@@ -308,14 +313,13 @@ func TestDefineLambda(t *testing.T) {
 		assert.Equal(t, 1, len(ln.Args))
 		assert.Equal(t, "x", ln.Args[0].GetValue())
 		switch lb := ln.Body.(type) {
-		case *ast.ListExpression:
-			assert.Equal(t, 3, lb.Size)
-			assert.Equal(t, "+", lb.Head.LNode.GetValue())
-			assert.Equal(t, "x", lb.Head.Next.LNode.GetValue())
-			assert.Equal(t, "x", lb.Head.Next.Next.LNode.GetValue())
-			assert.Nil(t, lb.Head.Next.Next.Next)
+		case *ast.OperationNode:
+			assert.Equal(t, "+", lb.Name.String())
+			assert.Equal(t, 2, len(lb.Params))
+			assert.Equal(t, "x", lb.Params[0].String())
+			assert.Equal(t, "x", lb.Params[1].String())
 		default:
-			assert.Fail(t, fmt.Sprintf("Invalid type: %+v", ln))
+			assert.Fail(t, fmt.Sprintf("Invalid type: %+v", lb))
 		}
 	default:
 		assert.Fail(t, fmt.Sprintf("Invalid type: %+v", ln))
@@ -444,8 +448,9 @@ func TestLambdaDeclaration(t *testing.T) {
 		assert.Equal(t, "x", l.Args[0].GetValue())
 		assert.Equal(t, "y", l.Args[1].GetValue())
 		switch b := l.Body.(type) {
-		case *ast.ListExpression:
-			assert.Equal(t, 3, b.Size)
+		case *ast.OperationNode:
+			assert.Equal(t, 2, len(b.Params))
+			assert.Equal(t, "+", b.Name.String())
 		default:
 			assert.Fail(t, fmt.Sprintf("Invalid type: %+v", l))
 		}
