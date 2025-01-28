@@ -8,19 +8,23 @@ import (
 	lx "github.com/tamercuba/golisp/lexer"
 )
 
+func getToken(l string, tt lx.TokenType, ch int, col int) lx.Token {
+	var t lx.Token
+	t.Literal = l
+	t.Type = tt
+	t.Pos = *lx.NewPos(ch, col)
+	return t
+}
+
 func TestDisplaySymbol(t *testing.T) {
-	tok := lx.NewToken(0x61, lx.Symbol, 0, 0)
-	symbol := NewSymbol(tok)
+	symbol := NewSymbol(getToken("a", lx.Symbol, 0, 0))
 
 	assert.Equal(t, "a", fmt.Sprintf("%v", symbol))
 	assert.Equal(t, "a", symbol.GetValue())
 }
 
 func TestStringNode(t *testing.T) {
-	var tok lx.Token
-	tok.Literal = "\"a\""
-	tok.Pos = *lx.NewPos(0, 0)
-	s := NewStringLiteral(tok)
+	s := NewStringLiteral(getToken("\"a\"", lx.String, 0, 0))
 
 	assert.Equal(t, "\"a\"", s.GetToken().Literal)
 	assert.Equal(t, "'a'", fmt.Sprintf("%v", s))
@@ -28,8 +32,7 @@ func TestStringNode(t *testing.T) {
 }
 
 func TestIntegerLiteral(t *testing.T) {
-	tok := lx.NewToken(0x31, lx.Int, 0, 0)
-	n := NewIntLiteral(tok)
+	n := NewIntLiteral(getToken("1", lx.Int, 0, 0))
 
 	assert.Equal(t, int32(1), n.GetValue())
 	assert.Equal(t, "1", fmt.Sprintf("%v", n))
@@ -37,15 +40,11 @@ func TestIntegerLiteral(t *testing.T) {
 }
 
 func TestInvalidIntegerLiteral(t *testing.T) {
-	tok := lx.NewToken(0x61, lx.Int, 0, 0)
-	assert.Panics(t, func() { NewIntLiteral(tok) })
+	assert.Panics(t, func() { NewIntLiteral(getToken("=", lx.Int, 0, 0)) })
 }
 
 func TestFloatLiteral(t *testing.T) {
-	var tok lx.Token
-	tok.Literal = "1.1"
-	tok.Pos = *lx.NewPos(0, 0)
-	n := NewFloatLiteral(tok)
+	n := NewFloatLiteral(getToken("1.1", lx.Float, 0, 0))
 
 	assert.Equal(t, float64(1.1), n.GetValue())
 	assert.Equal(t, "1.100000f", fmt.Sprintf("%v", n))
@@ -79,10 +78,7 @@ func TestListNode(t *testing.T) {
 }
 
 func TestBooleanDeclaration(t *testing.T) {
-	var tok lx.Token
-	tok.Literal = "true"
-	tok.Type = lx.Bool
-	b := NewBoolean(tok)
+	b := NewBoolean(getToken("true", lx.Bool, 0, 0))
 
 	assert.Equal(t, "true", fmt.Sprintf("%v", b))
 	assert.Equal(t, true, b.GetValue())
@@ -90,10 +86,7 @@ func TestBooleanDeclaration(t *testing.T) {
 }
 
 func TestNilNode(t *testing.T) {
-	var tok lx.Token
-	tok.Literal = "nil"
-	tok.Type = lx.Void
-	n := NewVoidNode(tok)
+	n := NewVoidNode(getToken("nil", lx.Void, 0, 0))
 
 	assert.Equal(t, "nil", fmt.Sprintf("%v", n))
 	assert.Nil(t, n.GetValue())
@@ -101,36 +94,30 @@ func TestNilNode(t *testing.T) {
 }
 
 func TestLambdaNode(t *testing.T) {
-	var tok lx.Token
-	tok.Literal = "lambda"
-	tok.Type = lx.Symbol
 	args := []Symbol{}
 
-	var lTok lx.Token
-	tok.Literal = "("
-	tok.Type = lx.LParen
-	body := NewListExpression(lTok)
-	l := NewLambdaNode(tok, args, body)
+	body := NewListExpression(getToken("(", lx.LParen, 0, 0))
+	l := NewLambdaNode(getToken("lambda", lx.Symbol, 0, 0), args, body)
 
 	assert.Equal(t, "(lambda () ())", fmt.Sprintf("%v", l))
 }
 
 func TestVarDifinitionNode(t *testing.T) {
-	var tok lx.Token
-	tok.Literal = "define"
-	tok.Type = lx.Symbol
+	name := NewSymbol(getToken("x", lx.Symbol, 0, 0))
+	value := NewBoolean(getToken("true", lx.Bool, 0, 0))
 
-	var nameTok lx.Token
-	nameTok.Literal = "x"
-	nameTok.Type = lx.Symbol
-
-	var valueTok lx.Token
-	valueTok.Literal = "true"
-	valueTok.Type = lx.Bool
-
-	name := NewSymbol(nameTok)
-	value := NewBoolean(valueTok)
-
-	n := NewVarDifinitionNode(tok, name, value)
+	n := NewVarDifinitionNode(getToken("define", lx.Symbol, 0, 0), name, value)
 	assert.Equal(t, "(define x true)", fmt.Sprintf("%v", n))
+}
+
+func TestOperationNode(t *testing.T) {
+	name := NewSymbol(getToken("+", lx.Symbol, 0, 0))
+	params := []Node{
+		NewIntLiteral(getToken("1", lx.Int, 0, 0)),
+		NewIntLiteral(getToken("2", lx.Int, 0, 0)),
+	}
+	on := NewOperationNode(getToken("(", lx.Symbol, 0, 0), name, params)
+
+	assert.Equal(t, "(+ 1 2)", fmt.Sprintf("%v", on))
+	assert.Equal(t, "+", fmt.Sprintf("%+v", on.GetValue()))
 }
