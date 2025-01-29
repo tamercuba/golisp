@@ -13,6 +13,12 @@ import (
 	pr "github.com/tamercuba/golisp/parser"
 )
 
+const (
+	DEFAULT_COLOR string = "\033[0m"
+	RETURN_COLOR  string = "\033[90m"
+	ERROR_COLOR   string = "\033[31m"
+)
+
 func clearScreen() {
 	fmt.Print("\033[H\033[2J")
 }
@@ -59,7 +65,11 @@ func main() {
 			fmt.Println(err)
 		}
 
-		result := evaluator.EvalProgram(p)
-		fmt.Printf("%s\n", result.Inspect())
+		r, err := evaluator.EvalProgram(p)
+		if err != nil {
+			fmt.Println(ERROR_COLOR, err, DEFAULT_COLOR)
+		} else {
+			fmt.Println(RETURN_COLOR, fmt.Sprintf("; %s", r.Inspect()), DEFAULT_COLOR)
+		}
 	}
 }
