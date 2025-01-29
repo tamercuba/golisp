@@ -55,6 +55,7 @@ func EvalGreather(o *ast.OperationNode) object.Object {
 		return false
 	})
 }
+
 func EvalGreatherOrEqual(o *ast.OperationNode) object.Object {
 	return compareList(o, func(a, b ast.Node) bool {
 		switch va := a.GetValue().(type) {
@@ -70,6 +71,7 @@ func EvalGreatherOrEqual(o *ast.OperationNode) object.Object {
 		return false
 	})
 }
+
 func EvalLesserOrEqual(o *ast.OperationNode) object.Object {
 	return compareList(o, func(a, b ast.Node) bool {
 		switch va := a.GetValue().(type) {
