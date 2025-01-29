@@ -5,26 +5,27 @@ import (
 	"github.com/tamercuba/golisp/parser/ast"
 )
 
-func compareList(o *ast.OperationNode, ff func(ast.Node, ast.Node) bool) object.Object {
+// TODO: Error handling here isnt anything special yet
+func compareList(o *ast.OperationNode, ff func(ast.Node, ast.Node) bool) (object.Object, error) {
 	value := o.Params[0]
 
 	for _, v := range o.Params[1:] {
 		if !ff(value, v) {
-			return &object.Boolean{Value: false}
+			return &object.Boolean{Value: false}, nil
 		}
 		value = v
 	}
 
-	return &object.Boolean{Value: true}
+	return &object.Boolean{Value: true}, nil
 }
 
-func EvalEqual(o *ast.OperationNode) object.Object {
+func EvalEqual(o *ast.OperationNode) (object.Object, error) {
 	return compareList(o, func(a, b ast.Node) bool {
 		return a.GetValue() == b.GetValue()
 	})
 }
 
-func EvalLesser(o *ast.OperationNode) object.Object {
+func EvalLesser(o *ast.OperationNode) (object.Object, error) {
 	return compareList(o, func(a, b ast.Node) bool {
 		switch va := a.GetValue().(type) {
 		case int32:
@@ -40,7 +41,7 @@ func EvalLesser(o *ast.OperationNode) object.Object {
 	})
 }
 
-func EvalGreather(o *ast.OperationNode) object.Object {
+func EvalGreather(o *ast.OperationNode) (object.Object, error) {
 	return compareList(o, func(a, b ast.Node) bool {
 		switch va := a.GetValue().(type) {
 		case int32:
@@ -56,7 +57,7 @@ func EvalGreather(o *ast.OperationNode) object.Object {
 	})
 }
 
-func EvalGreatherOrEqual(o *ast.OperationNode) object.Object {
+func EvalGreatherOrEqual(o *ast.OperationNode) (object.Object, error) {
 	return compareList(o, func(a, b ast.Node) bool {
 		switch va := a.GetValue().(type) {
 		case int32:
@@ -72,7 +73,7 @@ func EvalGreatherOrEqual(o *ast.OperationNode) object.Object {
 	})
 }
 
-func EvalLesserOrEqual(o *ast.OperationNode) object.Object {
+func EvalLesserOrEqual(o *ast.OperationNode) (object.Object, error) {
 	return compareList(o, func(a, b ast.Node) bool {
 		switch va := a.GetValue().(type) {
 		case int32:

@@ -1,7 +1,6 @@
 package evaluator
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/tamercuba/golisp/parser/ast"
@@ -36,8 +35,7 @@ func (e *Envinronment) dropScope() *Envinronment {
 func (e *Envinronment) Bind(name string, value ast.Node) error {
 	v, ok := e.vars[name]
 	if ok {
-		err := fmt.Sprintf("%v already exists (%v)", name, v)
-		return errors.New(err)
+		return NewEvalError(fmt.Sprintf("%v already exists (%v)", name, v), value.GetToken())
 	}
 	e.vars[name] = value
 	return nil
