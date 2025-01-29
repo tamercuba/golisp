@@ -27,13 +27,16 @@ func (e *Evaluator) DropScope() {
 
 func (e *Evaluator) EvalProgram(p *ast.Program) (object.Object, error) {
 	var result object.Object
-	var err error = nil
+	var err error
 
 	for _, node := range p.ListStatements {
 		result, err = e.evalNode(node)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return result, err
+	return result, nil
 }
 
 func (e *Evaluator) evalNode(p ast.Node) (object.Object, error) {
@@ -59,6 +62,7 @@ func (e *Evaluator) evalNode(p ast.Node) (object.Object, error) {
 	case *ast.OperationNode:
 		return e.evalOperation(v)
 	default:
+		fmt.Println("NAO SEI")
 		// TODO: Dont know what to do yet
 		return nil, nil
 	}
@@ -232,7 +236,7 @@ func (e *Evaluator) evalLambdaCall(t lx.Token, body ast.Node, params []ast.Node,
 	for i := range args {
 		err := e.Env.Bind(args[i].GetValue().(string), params[i])
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 

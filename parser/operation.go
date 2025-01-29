@@ -1,20 +1,17 @@
 package parser
 
 import (
-	"fmt"
-
 	lx "github.com/tamercuba/golisp/lexer"
 	"github.com/tamercuba/golisp/parser/ast"
 )
 
-func (p *Parser) parseOperation() *ast.OperationNode {
+func (p *Parser) parseOperation() (*ast.OperationNode, error) {
 	//  c p
 	// (+ 1 2)
-
 	if p.curToken.Type != lx.Symbol {
-		panic(fmt.Sprintf("%v Type Error. %v isnt a valid function name", p.peekToken.Pos, p.peekToken))
-
+		return nil, NewParseError("isn't a valid function name", p.peekToken)
 	}
+
 	token := p.curToken
 	name := p.parseSymbol()
 	params := []ast.Node{}
@@ -22,7 +19,10 @@ func (p *Parser) parseOperation() *ast.OperationNode {
 	for p.curToken.Type != lx.RParen {
 		switch p.curToken.Type {
 		case lx.LParen:
-			l := p.parseList()
+			l, err := p.parseList()
+			if err != nil {
+				return nil, err
+			}
 			if l != nil {
 				params = append(params, l)
 			}
@@ -39,11 +39,11 @@ func (p *Parser) parseOperation() *ast.OperationNode {
 		case lx.Void:
 			params = append(params, p.parseVoid())
 		case lx.EOF:
-			panic(fmt.Sprintf("%v( not closed, expect ).", token.Pos))
+			return nil, NewParseError("not closed, expect )", token)
 		default:
-			panic(fmt.Sprintf("Unexpected token in list: %+v", p.curToken))
+			return nil, NewParseError("isn't a valid list element", p.curToken)
 		}
 	}
 
-	return ast.NewOperationNode(token, name, params)
+	return ast.NewOperationNode(token, name, params), nil
 }

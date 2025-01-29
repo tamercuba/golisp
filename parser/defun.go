@@ -1,39 +1,50 @@
 package parser
 
 import (
-	"fmt"
-
 	lx "github.com/tamercuba/golisp/lexer"
 	"github.com/tamercuba/golisp/parser/ast"
 )
 
-func (p *Parser) parseLambda() *ast.LambdaNode {
+func (p *Parser) parseLambda() (*ast.LambdaNode, error) {
 	//  c      p
 	// (lambda (x y) (+ x y))
 	firstToken := p.curToken
 	p.nextToken()
-	funcArgs := p.getFunctionArgs()
-	body := p.getFunctionBody()
 
-	return ast.NewLambdaNode(firstToken, funcArgs, body)
+	funcArgs, err := p.getFunctionArgs()
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := p.getFunctionBody()
+	if err != nil {
+		return nil, err
+	}
+
+	return ast.NewLambdaNode(firstToken, funcArgs, body), nil
 }
 
-func (p *Parser) getFunctionBody() ast.Node {
+func (p *Parser) getFunctionBody() (ast.Node, error) {
 	//               cp
 	// (lambda (x y) (+ x y))
 	if p.peekToken.Type != lx.LParen {
-		panic(fmt.Sprintf("%v Type Error. Function body should be a list, not %v", p.peekToken.Pos, p.peekToken))
+		return nil, NewParseError("isn't a valid function body, should be a list.", p.peekToken)
 	}
+
 	p.nextToken()
-	body := p.parseList()
-	return body
+	body, err := p.parseList()
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
 }
 
-func (p *Parser) getFunctionArgs() []ast.Symbol {
+func (p *Parser) getFunctionArgs() ([]ast.Symbol, error) {
 	//          cp
 	// (defun x (y) (+ 1 y))
 	if p.curToken.Type != lx.LParen {
-		panic(fmt.Sprintf("%v Type Error. Function args should be a List, not %v", p.peekToken.Pos, p.peekToken))
+		return nil, NewParseError("isn't a valid function argument, should be a list of symbols", p.peekToken)
 	}
 
 	p.nextToken()
@@ -48,9 +59,9 @@ func (p *Parser) getFunctionArgs() []ast.Symbol {
 			args = append(args, *newParam)
 			p.nextToken()
 		case lx.RParen:
-			return args
+			return args, nil
 		default:
-			panic(fmt.Sprintf("%+v Invalid Syntax. %+v Should be a valid function argument or )", p.curToken.Pos, p.curToken))
+			return nil, NewParseError("should be a valid function argument or )", p.curToken)
 		}
 	}
 }

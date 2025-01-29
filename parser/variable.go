@@ -1,19 +1,17 @@
 package parser
 
 import (
-	"fmt"
-
 	lx "github.com/tamercuba/golisp/lexer"
 	"github.com/tamercuba/golisp/parser/ast"
 )
 
-func (p *Parser) parseVar() *ast.VarDifinitionNode {
+func (p *Parser) parseVar() (*ast.VarDifinitionNode, error) {
 	firstToken := p.curToken
 	//   c  p
 	// (let x 10)
 
 	if p.peekToken.Type != lx.Symbol {
-		panic(fmt.Sprintf("%v Type Error. %v isnt a valid binding name", p.peekToken.Pos, p.peekToken))
+		return nil, NewParseError("isn't a valid binding name", p.peekToken)
 	}
 	p.nextToken()
 	bindingName := p.parseSymbol()
@@ -21,9 +19,14 @@ func (p *Parser) parseVar() *ast.VarDifinitionNode {
 	//        c p
 	// (let x 10)
 	var bindingValue ast.Node
+	var err error = nil
+
 	switch p.curToken.Type {
 	case lx.LParen:
-		bindingValue = p.parseList()
+		bindingValue, err = p.parseList()
+		if err != nil {
+			return nil, err
+		}
 	case lx.Symbol:
 		bindingValue = p.parseSymbol()
 	case lx.Int:
@@ -37,8 +40,8 @@ func (p *Parser) parseVar() *ast.VarDifinitionNode {
 	case lx.Void:
 		bindingValue = p.parseVoid()
 	default:
-		panic(fmt.Sprintf("%q Type Error. %q isnt a valid binding value", p.peekToken.Pos, p.peekToken))
+		return nil, NewParseError("isn't a valid binding value", p.peekToken)
 	}
 
-	return ast.NewVarDifinitionNode(firstToken, bindingName, bindingValue)
+	return ast.NewVarDifinitionNode(firstToken, bindingName, bindingValue), nil
 }

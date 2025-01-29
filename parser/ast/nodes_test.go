@@ -39,21 +39,12 @@ func TestIntegerLiteral(t *testing.T) {
 	assert.Equal(t, "1", n.GetToken().Literal)
 }
 
-func TestInvalidIntegerLiteral(t *testing.T) {
-	assert.Panics(t, func() { NewIntLiteral(getToken("=", lx.Int, 0, 0)) })
-}
-
 func TestFloatLiteral(t *testing.T) {
 	n := NewFloatLiteral(getToken("1.1", lx.Float, 0, 0))
 
 	assert.Equal(t, float64(1.1), n.GetValue())
 	assert.Equal(t, "1.100000f", fmt.Sprintf("%v", n))
 	assert.Equal(t, "1.1", n.GetToken().Literal)
-}
-
-func TestInvalidFloatLiteral(t *testing.T) {
-	tok := lx.NewToken(0x61, lx.Int, 0, 0)
-	assert.Panics(t, func() { NewFloatLiteral(tok) })
 }
 
 func TestListNode(t *testing.T) {

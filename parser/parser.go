@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"fmt"
-
 	lx "github.com/tamercuba/golisp/lexer"
 	"github.com/tamercuba/golisp/parser/ast"
 )
@@ -36,7 +34,10 @@ func ParseProgram(l *lx.Lexer) (*ast.Program, error) {
 	for p.curToken.Type != lx.EOF {
 		switch p.curToken.Type {
 		case lx.LParen:
-			list := p.parseList()
+			list, err := p.parseList()
+			if err != nil {
+				return nil, err
+			}
 			if list != nil {
 				program.ListStatements = append(program.ListStatements, list)
 			}
@@ -56,20 +57,23 @@ func ParseProgram(l *lx.Lexer) (*ast.Program, error) {
 			n := p.parseVoid()
 			program.ListStatements = append(program.ListStatements, n)
 		default:
-			panic(fmt.Sprintf("INVALID SYNTAX: %+v\n", p.curToken))
+			return nil, NewParseError("Is an invalid entry", p.curToken)
 		}
 	}
 
 	return program, nil
 }
 
-func (p *Parser) parseList() ast.Node {
+func (p *Parser) parseList() (ast.Node, error) {
 	// Expect curToken.Type == LParen
 	if p.peekToken.Type == lx.Symbol {
-		result := p.parseNextSymbol()
+		result, err := p.parseNextSymbol()
+		if err != nil {
+			return nil, err
+		}
 		if result != nil {
 			p.nextToken()
-			return result
+			return result, nil
 		}
 	}
 
@@ -79,13 +83,16 @@ func (p *Parser) parseList() ast.Node {
 	for {
 		switch p.curToken.Type {
 		case lx.LParen:
-			nestedList := p.parseList()
+			nestedList, err := p.parseList()
+			if err != nil {
+				return nil, err
+			}
 			if nestedList != nil {
 				list.Append(nestedList)
 			}
 		case lx.RParen:
 			p.nextToken()
-			return list
+			return list, nil
 		case lx.Int:
 			list.Append(p.parseInt())
 		case lx.Float:
@@ -99,9 +106,9 @@ func (p *Parser) parseList() ast.Node {
 		case lx.Void:
 			list.Append(p.parseVoid())
 		case lx.EOF:
-			panic(fmt.Sprintf("%v( not closed, expect ).", list.GetToken().Pos))
+			return nil, NewParseError("not closed, expect ).", list.GetToken())
 		default:
-			panic(fmt.Sprintf("Unexpected token in list: %+v", p.curToken))
+			return nil, NewParseError("Is an unexpected list element", p.curToken)
 		}
 	}
 
@@ -143,7 +150,7 @@ func (p *Parser) parseSymbol() *ast.Symbol {
 	return result
 }
 
-func (p *Parser) parseNextSymbol() ast.Node {
+func (p *Parser) parseNextSymbol() (ast.Node, error) {
 	for {
 		switch p.peekToken.Literal {
 		case "let", "define":
@@ -158,7 +165,7 @@ func (p *Parser) parseNextSymbol() ast.Node {
 				return p.parseOperation()
 			} else {
 				// Nothing special
-				return nil
+				return nil, nil
 			}
 		}
 	}

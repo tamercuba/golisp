@@ -62,14 +62,12 @@ func main() {
 		p, err := pr.ParseProgram(l)
 
 		if err != nil {
-			fmt.Println(err)
-		}
-
-		r, err := evaluator.EvalProgram(p)
-		if err != nil {
+			fmt.Println(ERROR_COLOR, err, DEFAULT_COLOR)
+		} else if r, err := evaluator.EvalProgram(p); err != nil {
 			fmt.Println(ERROR_COLOR, err, DEFAULT_COLOR)
 		} else {
 			fmt.Println(RETURN_COLOR, fmt.Sprintf("; %s", r.Inspect()), DEFAULT_COLOR)
 		}
+
 	}
 }
