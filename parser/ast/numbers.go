@@ -18,10 +18,8 @@ type FloatLiteral struct {
 }
 
 func NewIntLiteral(token lx.Token) *IntLiteral {
-	value, err := strconv.Atoi(token.Literal)
-	if err != nil {
-		panic(fmt.Sprintf("%q is a invalid integer", token.Literal))
-	}
+	value, _ := strconv.Atoi(token.Literal)
+	// Validated on lexer
 
 	return &IntLiteral{token: token, value: int32(value)}
 }
@@ -39,10 +37,8 @@ func (il *IntLiteral) GetValue() any {
 }
 
 func NewFloatLiteral(token lx.Token) *FloatLiteral {
-	value, err := strconv.ParseFloat(token.Literal, 64)
-	if err != nil {
-		panic(fmt.Sprintf("%q is a invalid float", token.Literal))
-	}
+	value, _ := strconv.ParseFloat(token.Literal, 64)
+	// Validated on lexer
 
 	return &FloatLiteral{token: token, value: value}
 }

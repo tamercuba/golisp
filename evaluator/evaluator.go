@@ -5,6 +5,7 @@ import (
 
 	"github.com/tamercuba/golisp/evaluator/builtins"
 	"github.com/tamercuba/golisp/evaluator/object"
+	lx "github.com/tamercuba/golisp/lexer"
 	"github.com/tamercuba/golisp/parser/ast"
 )
 
@@ -24,28 +25,32 @@ func (e *Evaluator) DropScope() {
 	e.Env = e.Env.dropScope()
 }
 
-func (e *Evaluator) EvalProgram(p *ast.Program) object.Object {
+func (e *Evaluator) EvalProgram(p *ast.Program) (object.Object, error) {
 	var result object.Object
+	var err error
 
 	for _, node := range p.ListStatements {
-		result = e.evalNode(node)
+		result, err = e.evalNode(node)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return result
+	return result, nil
 }
 
-func (e *Evaluator) evalNode(p ast.Node) object.Object {
+func (e *Evaluator) evalNode(p ast.Node) (object.Object, error) {
 	switch v := p.(type) {
 	case *ast.IntLiteral:
-		return &object.Integer{Value: v.GetValue().(int32)}
+		return &object.Integer{Value: v.GetValue().(int32)}, nil
 	case *ast.FloatLiteral:
-		return &object.Float{Value: v.GetValue().(float64)}
+		return &object.Float{Value: v.GetValue().(float64)}, nil
 	case *ast.Boolean:
-		return &object.Boolean{Value: v.GetValue().(bool)}
+		return &object.Boolean{Value: v.GetValue().(bool)}, nil
 	case *ast.VoidNode:
-		return &object.Nil{}
+		return &object.Nil{}, nil
 	case *ast.StringLiteral:
-		return &object.String{Value: v.GetValue().(string)}
+		return &object.String{Value: v.GetValue().(string)}, nil
 	case *ast.Symbol:
 		return e.evalSymbol(v)
 	case *ast.ListExpression:
@@ -53,61 +58,63 @@ func (e *Evaluator) evalNode(p ast.Node) object.Object {
 	case *ast.VarDifinitionNode:
 		return e.evalVarDefinition(v)
 	case *ast.LambdaNode:
-		return &object.Nil{}
+		return &object.Nil{}, nil
 	case *ast.OperationNode:
 		return e.evalOperation(v)
 	default:
-		return nil
+		fmt.Println("NAO SEI")
+		// TODO: Dont know what to do yet
+		return nil, nil
 	}
 }
 
-func (e *Evaluator) evalOperation(o *ast.OperationNode) object.Object {
+func (e *Evaluator) evalOperation(o *ast.OperationNode) (object.Object, error) {
 	e.evalOperationParams(o)
 	switch o.Name.String() {
 	case "+":
 		if len(o.Params) < 2 {
-			panic("+ needs 2 or more arguments")
+			return nil, NewEvalError(fmt.Sprintf("needs 2 or more arguments, %d were given", len(o.Params)), o.GetToken())
 		}
 		return builtins.EvalSum(o)
 	case "-":
 		if len(o.Params) < 2 {
-			panic("- needs 2 or more arguments")
+			return nil, NewEvalError(fmt.Sprintf("needs 2 or more arguments, %d were given", len(o.Params)), o.GetToken())
 		}
 		return builtins.EvalSub(o)
 	case "*":
 		if len(o.Params) < 2 {
-			panic("* needs 2 or more arguments")
+			return nil, NewEvalError(fmt.Sprintf("needs 2 or more arguments, %d were given", len(o.Params)), o.GetToken())
 		}
 		return builtins.EvalMultiplication(o)
 	case "=":
 		if len(o.Params) < 2 {
-			panic("= needs 2 or more arguments")
+			return nil, NewEvalError(fmt.Sprintf("needs 2 or more arguments, %d were given", len(o.Params)), o.GetToken())
 		}
 		return builtins.EvalEqual(o)
 	case "<":
 		if len(o.Params) < 2 {
-			panic("< needs 2 or more arguments")
+			return nil, NewEvalError(fmt.Sprintf("needs 2 or more arguments, %d were given", len(o.Params)), o.GetToken())
 		}
 		return builtins.EvalLesser(o)
 	case ">":
 		if len(o.Params) < 2 {
-			panic("> needs 2 or more arguments")
+			return nil, NewEvalError(fmt.Sprintf("needs 2 or more arguments, %d were given", len(o.Params)), o.GetToken())
 		}
 		return builtins.EvalGreather(o)
 	case ">=":
 		if len(o.Params) < 2 {
-			panic(">= needs 2 or more arguments")
+			return nil, NewEvalError(fmt.Sprintf("needs 2 or more arguments, %d were given", len(o.Params)), o.GetToken())
 		}
 		return builtins.EvalGreatherOrEqual(o)
 	case "<=":
 		if len(o.Params) < 2 {
-			panic(">= needs 2 or more arguments")
+			return nil, NewEvalError(fmt.Sprintf("needs 2 or more arguments, %d were given", len(o.Params)), o.GetToken())
 		}
 		return builtins.EvalLesserOrEqual(o)
 		// case "/":
 	// panic("Not implemented yet")
 	default:
-		return &object.Nil{}
+		return nil, NewEvalError(fmt.Sprintf("Unknown symbol %s", o.Name.String()), o.GetToken())
 	}
 
 }
@@ -129,17 +136,18 @@ func (e *Evaluator) evalOperationParams(o *ast.OperationNode) {
 	o.Params = newParams
 }
 
-func (e *Evaluator) evalSymbol(l *ast.Symbol) object.Object {
+func (e *Evaluator) evalSymbol(l *ast.Symbol) (object.Object, error) {
 	v := e.Env.Get(l.GetValue().(string))
 	if v != nil {
 		return e.evalNode(v)
 	}
-	panic(fmt.Sprintf("Unknow %s", v))
+
+	return nil, NewEvalError(fmt.Sprintf("Unknown symbol"), l.GetToken())
 }
 
-func (e *Evaluator) evalList(l *ast.ListExpression) object.Object {
+func (e *Evaluator) evalList(l *ast.ListExpression) (object.Object, error) {
 	if l.Head == nil {
-		return &object.List{Content: []object.Object{}}
+		return &object.List{Content: []object.Object{}}, nil
 	}
 
 	switch s := l.Head.LNode.(type) {
@@ -150,9 +158,9 @@ func (e *Evaluator) evalList(l *ast.ListExpression) object.Object {
 			case *ast.LambdaNode:
 				lambda := v.(*ast.LambdaNode)
 				if ok, args := isLambdaCall(lambda, l.Head.Next); ok {
-					return e.evalLambdaCall(lambda.Body, args, lambda.Args)
+					return e.evalLambdaCall(lambda.GetToken(), lambda.Body, args, lambda.Args)
 				}
-				return &object.Nil{}
+				return &object.Nil{}, nil
 			}
 		}
 	case *ast.LambdaNode:
@@ -165,19 +173,25 @@ func (e *Evaluator) evalList(l *ast.ListExpression) object.Object {
 		}
 
 		if len(params) != len(s.Args) {
-			panic("WRONG NUMBER OF ARGUMENTS")
+			return nil, NewEvalError(fmt.Sprintf(
+				"%d arguments expected, %d given", len(s.Args), len(params),
+			), l.GetToken())
 		}
-		return e.evalLambdaCall(s.Body, params, s.Args)
+		return e.evalLambdaCall(s.GetToken(), s.Body, params, s.Args)
 	}
 
 	c := l.Head
 	r := []object.Object{}
 	for c != nil {
-		r = append(r, e.evalNode(c.LNode))
+		n, err := e.evalNode(c.LNode)
+		if err != nil {
+			return nil, err
+		}
+		r = append(r, n)
 		c = c.Next
 	}
 
-	return &object.List{Content: r}
+	return &object.List{Content: r}, nil
 }
 
 func isLambdaCall(l *ast.LambdaNode, n *ast.ListNode) (bool, []ast.Node) {
@@ -193,38 +207,40 @@ func isLambdaCall(l *ast.LambdaNode, n *ast.ListNode) (bool, []ast.Node) {
 	return totalArgs == len(l.Args), args
 }
 
-func (e *Evaluator) evalVarDefinition(v *ast.VarDifinitionNode) object.Object {
+func (e *Evaluator) evalVarDefinition(v *ast.VarDifinitionNode) (object.Object, error) {
 	switch v.DefinitionType {
 	case ast.LET:
 		err := e.Env.Bind(v.Name.GetValue().(string), v.Value)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 	case ast.DEFINE:
 		err := e.Env.BindGlobal(v.Name.GetValue().(string), v.Value)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
-	return &object.Nil{}
+	return &object.Nil{}, nil
 }
 
-func (e *Evaluator) evalLambdaCall(body ast.Node, params []ast.Node, args []ast.Symbol) object.Object {
+func (e *Evaluator) evalLambdaCall(t lx.Token, body ast.Node, params []ast.Node, args []ast.Symbol) (object.Object, error) {
 	e.NewScope()
 
 	if len(args) != len(params) {
-		panic("AAA")
-		// TODO: Improve validations
+		return nil, NewEvalError(fmt.Sprintf(
+			"%d arguments expected, %d given", len(args), len(params),
+		), t)
+
 	}
 
 	for i := range args {
 		err := e.Env.Bind(args[i].GetValue().(string), params[i])
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 
-	result := e.evalNode(body)
+	result, err := e.evalNode(body)
 	e.DropScope()
-	return result
+	return result, err
 }

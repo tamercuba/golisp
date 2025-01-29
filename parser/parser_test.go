@@ -190,9 +190,10 @@ func TestVarDifinitionNodeWithNestedList(t *testing.T) {
 func TestLetWithoutValue(t *testing.T) {
 	input := `(let x)`
 	l := lexer.NewLexer(input)
-	assert.Panics(t, func() {
-		ParseProgram(l)
-	})
+	r, err := ParseProgram(l)
+
+	assert.Error(t, err)
+	assert.Nil(t, r)
 }
 
 func TestLetWithStringValue(t *testing.T) {
@@ -220,9 +221,10 @@ func TestLetWithStringValue(t *testing.T) {
 func TestVarDifinitionNodeWithInvalidName(t *testing.T) {
 	input := `(let @ 1)`
 	l := lexer.NewLexer(input)
-	assert.Panics(t, func() {
-		ParseProgram(l)
-	})
+	r, err := ParseProgram(l)
+
+	assert.Error(t, err)
+	assert.Nil(t, r)
 }
 
 func TestListWithBooleanValues(t *testing.T) {
@@ -374,14 +376,13 @@ func TestBooleanAlone(t *testing.T) {
 func TestUnbalancedList(t *testing.T) {
 	input := `(1 2`
 	l := lexer.NewLexer(input)
+	r, err := ParseProgram(l)
 
-	defer func() {
-		if r := recover(); r != nil {
-			expectedMessage := "0:0 ( not closed, expect )."
-			assert.Equal(t, expectedMessage, r)
-		}
-	}()
-	ParseProgram(l)
+	expectedMessage := "0:0  (   not closed, expect )."
+
+	assert.Error(t, err)
+	assert.Equal(t, expectedMessage, err.Error())
+	assert.Nil(t, r)
 }
 
 func TestAssignmentWithNilValue(t *testing.T) {
@@ -462,12 +463,10 @@ func TestLambdaDeclaration(t *testing.T) {
 func TestLambdaWithWrongSyntax(t *testing.T) {
 	input := `(lambda x (+ x x))`
 	l := lexer.NewLexer(input)
+	r, err := ParseProgram(l)
 
-	defer func() {
-		if r := recover(); r != nil {
-			expectedMessage := "0:10  Type Error. Function args should be a List, not {0 ( 0:10 }"
-			assert.Equal(t, expectedMessage, r)
-		}
-	}()
-	ParseProgram(l)
+	expectedMessage := "0:10  (   isn't a valid function argument, should be a list of symbols"
+	assert.Error(t, err)
+	assert.Equal(t, expectedMessage, err.Error())
+	assert.Nil(t, r)
 }

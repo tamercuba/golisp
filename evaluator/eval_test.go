@@ -16,9 +16,10 @@ func TestEvalDefineVar(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 
 	e := NewEvaluator()
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 	x := e.Env.Get("x")
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.NIL_TYPE, r.Type())
 
 	assert.IsType(t, &ast.IntLiteral{}, x)
@@ -32,8 +33,9 @@ func TestEvalSumOfIntegers(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 
 	e := NewEvaluator()
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.INT_TYPE, r.Type())
 	assert.Equal(t, "3", r.Inspect())
 }
@@ -44,8 +46,9 @@ func TestEvalSumOfManyIntegers(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 
 	e := NewEvaluator()
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.INT_TYPE, r.Type())
 	assert.Equal(t, "55", r.Inspect())
 }
@@ -56,8 +59,9 @@ func TestEvalSumOfIntegersAndFloats(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 
 	e := NewEvaluator()
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.FLOAT_TYPE, r.Type())
 	assert.Equal(t, "5.500000", r.Inspect())
 }
@@ -68,8 +72,9 @@ func TestEvalSubOfManyIntegersAndFloats(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 
 	e := NewEvaluator()
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.FLOAT_TYPE, r.Type())
 	assert.Equal(t, "-8.500000", r.Inspect())
 }
@@ -80,8 +85,9 @@ func TestSumOfNegativeNumbers(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 
 	e := NewEvaluator()
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.FLOAT_TYPE, r.Type())
 	assert.Equal(t, "-10.500000", r.Inspect())
 }
@@ -92,8 +98,9 @@ func TestLambdaDeclaration(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 
 	e := NewEvaluator()
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.IsType(t, &object.Nil{}, r)
 }
 
@@ -103,8 +110,9 @@ func TestLambdaDeclarationAndCall(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 
 	e := NewEvaluator()
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.INT_TYPE, r.Type())
 	assert.Equal(t, "11", r.Inspect())
 }
@@ -118,8 +126,9 @@ func TestLambdaCallWithDefine(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 
 	e := NewEvaluator()
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.INT_TYPE, r.Type())
 	assert.Equal(t, "50", r.Inspect())
 }
@@ -131,8 +140,9 @@ func TestEvalEqualOperator(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 	e := NewEvaluator()
 
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
 	assert.Equal(t, "false", r.Inspect())
 }
@@ -143,8 +153,9 @@ func TestEvalLesserOperator(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 	e := NewEvaluator()
 
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
 	assert.Equal(t, "true", r.Inspect())
 }
@@ -156,8 +167,9 @@ func TestEvalGreatherOperator(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 	e := NewEvaluator()
 
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
 	assert.Equal(t, "false", r.Inspect())
 }
@@ -169,8 +181,9 @@ func TestEvalLesserOrEqualOperator(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 	e := NewEvaluator()
 
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
 	assert.Equal(t, "true", r.Inspect())
 }
@@ -181,8 +194,9 @@ func TestEvalGreatherOrEqualOperator(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 	e := NewEvaluator()
 
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
 	assert.Equal(t, "true", r.Inspect())
 }
@@ -194,8 +208,9 @@ func TestEvalEqualOperatorWithFloat(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 	e := NewEvaluator()
 
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
 	assert.Equal(t, "false", r.Inspect())
 }
@@ -206,8 +221,9 @@ func TestEvalLesserOperatorWithFloat(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 	e := NewEvaluator()
 
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
 	assert.Equal(t, "true", r.Inspect())
 }
@@ -219,8 +235,9 @@ func TestEvalGreatherOperatorWithFloag(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 	e := NewEvaluator()
 
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
 	assert.Equal(t, "false", r.Inspect())
 }
@@ -232,8 +249,9 @@ func TestEvalLesserOrEqualOperatorWithFloat(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 	e := NewEvaluator()
 
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
 	assert.Equal(t, "true", r.Inspect())
 }
@@ -244,8 +262,9 @@ func TestEvalGreatherOrEqualOperatorWithFloat(t *testing.T) {
 	p, _ := pr.ParseProgram(l)
 	e := NewEvaluator()
 
-	r := e.EvalProgram(p)
+	r, err := e.EvalProgram(p)
 
+	assert.Nil(t, err)
 	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
 	assert.Equal(t, "true", r.Inspect())
 }
