@@ -52,15 +52,11 @@ func (e *Envinronment) BindGlobal(name string, value ast.Node) error {
 }
 
 func (e *Envinronment) Get(name string) ast.Node {
-	if e.outerScope != nil {
-		value := e.outerScope.Get(name)
-		if value != nil {
-			return value
-		}
-	}
 	v, ok := e.vars[name]
 	if ok {
 		return v
+	} else if e.outerScope != nil {
+		return e.outerScope.Get(name)
 	} else {
 		return nil
 	}

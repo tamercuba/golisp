@@ -123,3 +123,129 @@ func TestLambdaCallWithDefine(t *testing.T) {
 	assert.Equal(t, object.INT_TYPE, r.Type())
 	assert.Equal(t, "50", r.Inspect())
 }
+
+func TestEvalEqualOperator(t *testing.T) {
+	input := `(= 1 2)`
+
+	l := lx.NewLexer(input)
+	p, _ := pr.ParseProgram(l)
+	e := NewEvaluator()
+
+	r := e.EvalProgram(p)
+
+	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
+	assert.Equal(t, "false", r.Inspect())
+}
+func TestEvalLesserOperator(t *testing.T) {
+	input := `(< 1 2)`
+
+	l := lx.NewLexer(input)
+	p, _ := pr.ParseProgram(l)
+	e := NewEvaluator()
+
+	r := e.EvalProgram(p)
+
+	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
+	assert.Equal(t, "true", r.Inspect())
+}
+
+func TestEvalGreatherOperator(t *testing.T) {
+	input := `(> 1 2)`
+
+	l := lx.NewLexer(input)
+	p, _ := pr.ParseProgram(l)
+	e := NewEvaluator()
+
+	r := e.EvalProgram(p)
+
+	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
+	assert.Equal(t, "false", r.Inspect())
+}
+
+func TestEvalLesserOrEqualOperator(t *testing.T) {
+	input := `(<= 1 1)`
+
+	l := lx.NewLexer(input)
+	p, _ := pr.ParseProgram(l)
+	e := NewEvaluator()
+
+	r := e.EvalProgram(p)
+
+	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
+	assert.Equal(t, "true", r.Inspect())
+}
+func TestEvalGreatherOrEqualOperator(t *testing.T) {
+	input := `(>= 1 1)`
+
+	l := lx.NewLexer(input)
+	p, _ := pr.ParseProgram(l)
+	e := NewEvaluator()
+
+	r := e.EvalProgram(p)
+
+	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
+	assert.Equal(t, "true", r.Inspect())
+}
+
+func TestEvalEqualOperatorWithFloat(t *testing.T) {
+	input := `(= 1.1 2.1)`
+
+	l := lx.NewLexer(input)
+	p, _ := pr.ParseProgram(l)
+	e := NewEvaluator()
+
+	r := e.EvalProgram(p)
+
+	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
+	assert.Equal(t, "false", r.Inspect())
+}
+func TestEvalLesserOperatorWithFloat(t *testing.T) {
+	input := `(< 1.1 2.1)`
+
+	l := lx.NewLexer(input)
+	p, _ := pr.ParseProgram(l)
+	e := NewEvaluator()
+
+	r := e.EvalProgram(p)
+
+	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
+	assert.Equal(t, "true", r.Inspect())
+}
+
+func TestEvalGreatherOperatorWithFloag(t *testing.T) {
+	input := `(> 1.1 2.1)`
+
+	l := lx.NewLexer(input)
+	p, _ := pr.ParseProgram(l)
+	e := NewEvaluator()
+
+	r := e.EvalProgram(p)
+
+	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
+	assert.Equal(t, "false", r.Inspect())
+}
+
+func TestEvalLesserOrEqualOperatorWithFloat(t *testing.T) {
+	input := `(<= 1.1 1.1)`
+
+	l := lx.NewLexer(input)
+	p, _ := pr.ParseProgram(l)
+	e := NewEvaluator()
+
+	r := e.EvalProgram(p)
+
+	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
+	assert.Equal(t, "true", r.Inspect())
+}
+func TestEvalGreatherOrEqualOperatorWithFloat(t *testing.T) {
+	input := `(>= 1.1 1.1)`
+
+	l := lx.NewLexer(input)
+	p, _ := pr.ParseProgram(l)
+	e := NewEvaluator()
+
+	r := e.EvalProgram(p)
+
+	assert.Equal(t, object.BOOLEAN_TYPE, r.Type())
+	assert.Equal(t, "true", r.Inspect())
+}

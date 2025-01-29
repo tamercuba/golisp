@@ -120,7 +120,7 @@ func isInteger(expr string) bool {
 }
 
 func isValidSymbol(expr string) bool {
-	return validateRegex(expr, `^[a-zA-Z0-9+\-*/^]+$`)
+	return validateRegex(expr, `^[a-zA-Z0-9+\-*<>=/^]+$`)
 }
 
 func isValidBool(expr string) bool {
@@ -128,5 +128,5 @@ func isValidBool(expr string) bool {
 }
 
 func isValidChar(ch byte) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || '0' <= ch && ch <= '9' || ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '"' || ch == '\''
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || '0' <= ch && ch <= '9' || ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '"' || ch == '\'' || ch == '=' || ch == '<' || ch == '>'
 }

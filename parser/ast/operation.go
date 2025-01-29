@@ -35,7 +35,7 @@ func (o *OperationNode) GetValue() any {
 
 func IsValidOperation(name string) bool {
 	switch name {
-	case "+", "-", "*", "/":
+	case "+", "-", "*", "/", "<", "<=", ">", ">=", "=", "!=":
 		return true
 	default:
 		return false

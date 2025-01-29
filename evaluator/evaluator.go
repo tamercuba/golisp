@@ -79,6 +79,31 @@ func (e *Evaluator) evalOperation(o *ast.OperationNode) object.Object {
 			panic("* needs 2 or more arguments")
 		}
 		return builtins.EvalMultiplication(o)
+	case "=":
+		if len(o.Params) < 2 {
+			panic("= needs 2 or more arguments")
+		}
+		return builtins.EvalEqual(o)
+	case "<":
+		if len(o.Params) < 2 {
+			panic("< needs 2 or more arguments")
+		}
+		return builtins.EvalLesser(o)
+	case ">":
+		if len(o.Params) < 2 {
+			panic("> needs 2 or more arguments")
+		}
+		return builtins.EvalGreather(o)
+	case ">=":
+		if len(o.Params) < 2 {
+			panic(">= needs 2 or more arguments")
+		}
+		return builtins.EvalGreatherOrEqual(o)
+	case "<=":
+		if len(o.Params) < 2 {
+			panic(">= needs 2 or more arguments")
+		}
+		return builtins.EvalLesserOrEqual(o)
 		// case "/":
 	// panic("Not implemented yet")
 	default:
